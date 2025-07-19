@@ -151,73 +151,24 @@ export function useMessenger() {
       setIsTyping(true);
       setTimeout(() => {
         setIsTyping(false);
-        // Generate contextual response based on user's message
-        const generateContextualResponse = (userMessage: string) => {
-          const words = userMessage.toLowerCase();
-          
-          // Greeting responses
-          if (words.includes('hi') || words.includes('hello') || words.includes('hey')) {
-            return ["heyy bestie! 💕 what's good?", "hiiii! you're cute fr 🥺", "hey there! loving the energy already ✨"][Math.floor(Math.random() * 3)];
-          }
-          
-          // Music related
-          if (words.includes('music') || words.includes('song') || words.includes('band')) {
-            return ["yooo music taste reveal pls?? 🎵", "no cap music is my love language bestie", "omg we need to share playlists asap! what genre you into?"][Math.floor(Math.random() * 3)];
-          }
-          
-          // Food related
-          if (words.includes('food') || words.includes('eat') || words.includes('restaurant')) {
-            return ["bestie same! food dates hit different though 🍕", "not you making me hungry rn 😭 what's your comfort food?", "food pics or it didn't happen fr fr 📸"][Math.floor(Math.random() * 3)];
-          }
-          
-          // Travel related
-          if (words.includes('travel') || words.includes('trip') || words.includes('vacation')) {
-            return ["travel bestie! where's your dream destination? ✈️", "periodt travel stories are the best! spill the tea", "wanderlust is real bestie, let's plan something together 🗺️"][Math.floor(Math.random() * 3)];
-          }
-          
-          // Movie/TV related
-          if (words.includes('movie') || words.includes('show') || words.includes('netflix')) {
-            return ["netflix and chill vibes? what we watching bestie 🍿", "movie nights are elite! what's your comfort watch?", "not me judging your taste rn... jk spill the recs 📺"][Math.floor(Math.random() * 3)];
-          }
-          
-          // Work/career related
-          if (words.includes('work') || words.includes('job') || words.includes('career')) {
-            return ["work bestie understands the grind 💪", "career goals though! tell me more about what you do", "work-life balance is everything bestie, how you managing?"][Math.floor(Math.random() * 3)];
-          }
-          
-          // Positive sentiment responses
-          if (words.includes('amazing') || words.includes('awesome') || words.includes('great') || words.includes('!')) {
-            return ["your energy is immaculate bestie! 🌟", "periodt! this is why I fw you fr", "bestie you're literally glowing through the screen ✨"][Math.floor(Math.random() * 3)];
-          }
-          
-          // Questions
-          if (userMessage.includes('?')) {
-            return ["ooh good question bestie! lemme think... 🤔", "you really got me thinking rn fr", "bestie you're asking the real questions! love that for us 💭"][Math.floor(Math.random() * 3)];
-          }
-          
-          // Compliments
-          if (words.includes('cute') || words.includes('beautiful') || words.includes('handsome')) {
-            return ["stoppp you're making me blush 🥺💕", "bestie you're too sweet fr fr", "not you being perfect and humble too 😭✨"][Math.floor(Math.random() * 3)];
-          }
-          
-          // Default contextual responses
-          const contextualDefaults = [
-            "bestie you're such a vibe honestly 💫",
-            "fr though this conversation is everything",
-            "you really understand the assignment bestie ✨",
-            "periodt! we're really clicking rn 🫶",
-            "bestie you're giving main character energy",
-            "not me getting butterflies from this convo 🦋"
-          ];
-          
-          return contextualDefaults[Math.floor(Math.random() * contextualDefaults.length)];
-        };
-        
-        const responseText = generateContextualResponse(text);
+        const responses = [
+          "no cap that's actually so cool fr 😭✨",
+          "bestie you're giving main character energy and I'm here for it 💅",
+          "wait that's lowkey such a vibe though?? tell me more bestie",
+          "periodt! we're literally the same person omg 🫶",
+          "that's so slay honestly, you seem so genuine fr fr",
+          "not me getting butterflies from this convo 🦋 you're different different",
+          "bestie you just understood the assignment and I'm obsessed 💯",
+          "this is giving soulmate energy ngl... like are we twinning rn? 👯‍♀️",
+          "fr though you're such a green flag, rare to find someone real 🌱",
+          "stop why are you literally perfect?? this isn't fair 😩💕",
+          "you're giving me all the feels rn and I'm not mad about it 🥺",
+          "babe this conversation is everything, you really hit different 💫"
+        ];
         
         const responseMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: responseText,
+          text: responses[Math.floor(Math.random() * responses.length)],
           senderId: selectedUserId,
           recipientId: currentUser.id,
           timestamp: new Date(),
