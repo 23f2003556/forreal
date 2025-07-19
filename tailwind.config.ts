@@ -24,6 +24,27 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				
+				/* Chat specific colors */
+				'chat-background': 'hsl(var(--chat-background))',
+				'chat-panel': 'hsl(var(--chat-panel))',
+				'message-sent': 'hsl(var(--message-sent))',
+				'message-received': 'hsl(var(--message-received))',
+				'message-text': 'hsl(var(--message-text))',
+				
+				/* Insight colors */
+				'insight-primary': 'hsl(var(--insight-primary))',
+				'insight-secondary': 'hsl(var(--insight-secondary))',
+				'insight-warning': 'hsl(var(--insight-warning))',
+				'insight-success': 'hsl(var(--insight-success))',
+				
+				/* Emotional state colors */
+				'emotion-happy': 'hsl(var(--emotion-happy))',
+				'emotion-excited': 'hsl(var(--emotion-excited))',
+				'emotion-neutral': 'hsl(var(--emotion-neutral))',
+				'emotion-sad': 'hsl(var(--emotion-sad))',
+				'emotion-angry': 'hsl(var(--emotion-angry))',
+				
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
@@ -84,11 +105,40 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'message-slide-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px) scale(0.95)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0) scale(1)'
+					}
+				},
+				'typing-pulse': {
+					'0%, 100%': {
+						opacity: '0.5'
+					},
+					'50%': {
+						opacity: '1'
+					}
+				},
+				'insight-glow': {
+					'0%, 100%': {
+						boxShadow: '0 0 20px hsla(var(--accent), 0.2)'
+					},
+					'50%': {
+						boxShadow: '0 0 40px hsla(var(--accent), 0.4)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'message-slide-in': 'message-slide-in 0.3s ease-out',
+				'typing-pulse': 'typing-pulse 1.5s ease-in-out infinite',
+				'insight-glow': 'insight-glow 2s ease-in-out infinite'
 			}
 		}
 	},

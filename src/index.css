@@ -2,43 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Messenger App Design System - Modern chat interface with AI insights */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Main backgrounds */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    
+    /* Card and surface colors */
+    --card: 240 10% 5.9%;
+    --card-foreground: 0 0% 98%;
+    
+    /* Chat specific colors */
+    --chat-background: 240 8% 6%;
+    --chat-panel: 240 10% 8%;
+    --message-sent: 267 84% 60%;
+    --message-received: 240 6% 15%;
+    --message-text: 0 0% 98%;
+    
+    /* Insight colors */
+    --insight-primary: 184 85% 55%;
+    --insight-secondary: 267 84% 75%;
+    --insight-warning: 25 95% 53%;
+    --insight-success: 142 76% 36%;
+    
+    /* Emotional state colors */
+    --emotion-happy: 142 76% 50%;
+    --emotion-excited: 25 95% 60%;
+    --emotion-neutral: 220 13% 60%;
+    --emotion-sad: 220 90% 65%;
+    --emotion-angry: 0 84% 60%;
+    
+    --popover: 240 10% 5.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --primary: 267 84% 60%;
+    --primary-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --secondary: 240 6% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --muted: 240 6% 15%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 184 85% 55%;
+    --accent-foreground: 240 10% 3.9%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 240 6% 20%;
+    --input: 240 6% 15%;
+    --ring: 267 84% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    --gradient-insight: linear-gradient(135deg, hsl(var(--insight-primary)), hsl(var(--insight-secondary)));
+    --gradient-background: linear-gradient(180deg, hsl(var(--background)), hsl(var(--chat-background)));
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Shadows */
+    --shadow-message: 0 2px 8px hsla(var(--primary), 0.15);
+    --shadow-insight: 0 4px 20px hsla(var(--accent), 0.2);
+    --shadow-glow: 0 0 30px hsla(var(--primary), 0.3);
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 240 10% 8%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
 
