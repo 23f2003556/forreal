@@ -84,12 +84,14 @@ const createMockAI = (): MockAIAnalysis => ({
 });
 
 export function useMessenger() {
-  // Mock users
+  // Mock users - Indian names for dating app
   const [users] = useState<User[]>([
-    { id: '1', name: 'Alice Johnson', status: 'online' },
-    { id: '2', name: 'Bob Smith', status: 'away' },
-    { id: '3', name: 'Carol Davis', status: 'online' },
-    { id: '4', name: 'David Wilson', status: 'offline', lastSeen: new Date(Date.now() - 3600000) },
+    { id: '1', name: 'Priya Sharma', status: 'online' },
+    { id: '2', name: 'Arjun Patel', status: 'away' },
+    { id: '3', name: 'Ananya Singh', status: 'online' },
+    { id: '4', name: 'Vikram Reddy', status: 'offline', lastSeen: new Date(Date.now() - 3600000) },
+    { id: '5', name: 'Meera Gupta', status: 'online' },
+    { id: '6', name: 'Rohit Kumar', status: 'away' },
   ]);
   
   const [currentUser] = useState({ id: 'me', name: 'You' });
@@ -150,12 +152,14 @@ export function useMessenger() {
       setTimeout(() => {
         setIsTyping(false);
         const responses = [
-          "That's interesting! Tell me more.",
-          "I totally agree with you on that.",
-          "Really? I had no idea!",
-          "Sounds amazing! I'd love to try that.",
-          "I've been thinking about that too lately.",
-          "That reminds me of something similar I experienced.",
+          "That's really interesting! I'd love to know more about you 😊",
+          "I totally feel the same way about that!",
+          "Really? That's so cool! Tell me more",
+          "Wow, we have so much in common! 💫",
+          "I've been thinking about that lately too",
+          "That sounds amazing! I'd love to experience that with someone special",
+          "You seem really genuine, I appreciate that 💜",
+          "I'm really enjoying getting to know you better"
         ];
         
         const responseMessage: Message = {

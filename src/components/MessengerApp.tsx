@@ -31,13 +31,13 @@ export function MessengerApp() {
       {/* Header */}
       <header className="bg-chat-panel border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold text-foreground">InsightChat</h1>
+              <h1 className="text-xl font-bold text-foreground">For Real</h1>
             </div>
             <div className="text-sm text-muted-foreground">
-              AI-Powered Messenger with Behavioral Analysis
+              AI-Powered Dating Messenger with Emotional Intelligence
             </div>
           </div>
           
@@ -116,7 +116,7 @@ export function MessengerApp() {
                       <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>Start a conversation with {selectedUser.name}</p>
                       <p className="text-sm mt-2">
-                        {analyticsEnabled && "AI insights will appear as you chat"}
+                        {analyticsEnabled && "Discover your connection through AI insights"}
                       </p>
                     </div>
                   </div>
@@ -147,8 +147,8 @@ export function MessengerApp() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center text-muted-foreground">
                 <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">Welcome to InsightChat</h3>
-                <p>Select a contact to start messaging and receive AI insights</p>
+                <h3 className="text-lg font-medium mb-2">Welcome to For Real</h3>
+                <p>Select someone to start chatting and discover your connection</p>
               </div>
             </div>
           )}

@@ -59,7 +59,7 @@ export function InsightsPanel({ insights, isVisible, userName }: InsightsPanelPr
           <h2 className="text-lg font-semibold text-foreground">AI Insights</h2>
         </div>
         <p className="text-sm text-muted-foreground mt-1">
-          Real-time analysis of {userName}'s conversation
+          Understanding {userName}'s emotional connection and compatibility
         </p>
       </div>
 

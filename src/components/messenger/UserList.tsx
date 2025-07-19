@@ -26,7 +26,7 @@ export function UserList({ users, selectedUserId, onSelectUser }: UserListProps)
   return (
     <div className="w-80 bg-chat-panel border-r border-border">
       <div className="p-4 border-b border-border">
-        <h2 className="text-lg font-semibold text-foreground">Contacts</h2>
+        <h2 className="text-lg font-semibold text-foreground">Matches</h2>
       </div>
       
       <div className="overflow-y-auto">
