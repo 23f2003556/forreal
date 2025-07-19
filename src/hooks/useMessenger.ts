@@ -152,14 +152,18 @@ export function useMessenger() {
       setTimeout(() => {
         setIsTyping(false);
         const responses = [
-          "That's really interesting! I'd love to know more about you 😊",
-          "I totally feel the same way about that!",
-          "Really? That's so cool! Tell me more",
-          "Wow, we have so much in common! 💫",
-          "I've been thinking about that lately too",
-          "That sounds amazing! I'd love to experience that with someone special",
-          "You seem really genuine, I appreciate that 💜",
-          "I'm really enjoying getting to know you better"
+          "no cap that's actually so cool fr 😭✨",
+          "bestie you're giving main character energy and I'm here for it 💅",
+          "wait that's lowkey such a vibe though?? tell me more bestie",
+          "periodt! we're literally the same person omg 🫶",
+          "that's so slay honestly, you seem so genuine fr fr",
+          "not me getting butterflies from this convo 🦋 you're different different",
+          "bestie you just understood the assignment and I'm obsessed 💯",
+          "this is giving soulmate energy ngl... like are we twinning rn? 👯‍♀️",
+          "fr though you're such a green flag, rare to find someone real 🌱",
+          "stop why are you literally perfect?? this isn't fair 😩💕",
+          "you're giving me all the feels rn and I'm not mad about it 🥺",
+          "babe this conversation is everything, you really hit different 💫"
         ];
         
         const responseMessage: Message = {
