@@ -24,24 +24,39 @@ export function UserList({ users, selectedUserId, onSelectUser }: UserListProps)
   };
 
   return (
-    <div className="w-64 bg-background border-r border-border">
+    <div className="w-80 bg-chat-panel border-r border-border">
+      <div className="p-4 border-b border-border">
+        <h2 className="text-lg font-semibold text-foreground">Matches</h2>
+      </div>
+      
       <div className="overflow-y-auto">
         {users.map((user) => (
           <button
             key={user.id}
             onClick={() => onSelectUser(user.id)}
             className={cn(
-              "w-full p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left border-b border-border/50",
-              selectedUserId === user.id && "bg-muted"
+              "w-full p-4 flex items-center gap-3 hover:bg-secondary/50 transition-colors text-left",
+              selectedUserId === user.id && "bg-secondary"
             )}
           >
-            <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-sm font-medium">
-              {user.name.slice(0, 1).toUpperCase()}
+            <div className="relative">
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {user.name.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className={cn(
+                "absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-chat-panel",
+                getStatusColor(user.status)
+              )} />
             </div>
             
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-foreground truncate text-sm">
+              <div className="font-medium text-foreground truncate">
                 {user.name}
+              </div>
+              <div className="text-sm text-muted-foreground capitalize">
+                {user.status}
               </div>
             </div>
           </button>

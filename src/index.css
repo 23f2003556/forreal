@@ -2,46 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Minimalistic Chat Design System */
+/* Messenger App Design System - Modern chat interface with AI insights */
 
 @layer base {
   :root {
     /* Main backgrounds */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 15%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
     
     /* Card and surface colors */
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 15%;
+    --card: 240 10% 5.9%;
+    --card-foreground: 0 0% 98%;
     
     /* Chat specific colors */
-    --chat-background: 0 0% 100%;
-    --chat-panel: 0 0% 98%;
-    --message-sent: 0 0% 15%;
-    --message-received: 0 0% 95%;
-    --message-text: 0 0% 15%;
+    --chat-background: 240 8% 6%;
+    --chat-panel: 240 10% 8%;
+    --message-sent: 267 84% 60%;
+    --message-received: 240 6% 15%;
+    --message-text: 0 0% 98%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 15%;
+    /* Insight colors */
+    --insight-primary: 184 85% 55%;
+    --insight-secondary: 267 84% 75%;
+    --insight-warning: 25 95% 53%;
+    --insight-success: 142 76% 36%;
+    
+    /* Emotional state colors */
+    --emotion-happy: 142 76% 50%;
+    --emotion-excited: 25 95% 60%;
+    --emotion-neutral: 220 13% 60%;
+    --emotion-sad: 220 90% 65%;
+    --emotion-angry: 0 84% 60%;
+    
+    --popover: 240 10% 5.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 0 0% 15%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 267 84% 60%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 15%;
+    --secondary: 240 6% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 240 6% 15%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 0 0% 90%;
-    --accent-foreground: 0 0% 15%;
+    --accent: 184 85% 55%;
+    --accent-foreground: 240 10% 3.9%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 98%;
-    --ring: 0 0% 15%;
+    --border: 240 6% 20%;
+    --input: 240 6% 15%;
+    --ring: 267 84% 60%;
 
     --radius: 0.75rem;
     

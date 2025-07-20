@@ -27,26 +27,63 @@ export function MessengerApp() {
   } = useMessenger();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background to-chat-background">
       {/* Header */}
-      <header className="bg-background border-b border-border px-6 py-3">
+      <header className="bg-chat-panel border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-medium text-foreground">Messages</h1>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-6 w-6 text-primary" />
+              <h1 className="text-xl font-bold text-foreground">For Real</h1>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              AI-Powered Dating Messenger with Emotional Intelligence
+            </div>
+          </div>
           
-          {selectedUser && (
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowInsights(!showInsights)}
-              className="text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-2"
             >
+              {showInsights ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               {showInsights ? "Hide" : "Show"} Insights
             </Button>
-          )}
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSettings(!showSettings)}
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
+        
+        {/* Settings Panel */}
+        {showSettings && (
+          <div className="mt-4 p-4 bg-card rounded-lg border border-border">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="analytics"
+                checked={analyticsEnabled}
+                onCheckedChange={setAnalyticsEnabled}
+              />
+              <Label htmlFor="analytics" className="flex items-center gap-2">
+                <Brain className="h-4 w-4" />
+                Enable AI Analysis
+              </Label>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              When enabled, AI analyzes conversation patterns, emotions, and interests in real-time.
+            </p>
+          </div>
+        )}
       </header>
 
-      <div className="flex h-[calc(100vh-65px)]">
+      <div className="flex h-[calc(100vh-80px)]">
         {/* User List */}
         <UserList
           users={users}
@@ -55,19 +92,33 @@ export function MessengerApp() {
         />
         
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-background">
+        <div className="flex-1 flex flex-col bg-chat-background">
           {selectedUser ? (
             <>
               {/* Chat Header */}
-              <div className="bg-background border-b border-border px-6 py-3">
-                <h3 className="font-medium text-foreground">{selectedUser.name}</h3>
+              <div className="bg-chat-panel border-b border-border px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-medium">
+                    {selectedUser.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">{selectedUser.name}</h3>
+                    <p className="text-sm text-muted-foreground capitalize">{selectedUser.status}</p>
+                  </div>
+                </div>
               </div>
               
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 ? (
                   <div className="flex-1 flex items-center justify-center">
-                    <p className="text-muted-foreground">No messages yet</p>
+                    <div className="text-center text-muted-foreground">
+                      <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Start a conversation with {selectedUser.name}</p>
+                      <p className="text-sm mt-2">
+                        {analyticsEnabled && "Discover your connection through AI insights"}
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   messages.map((message) => (
@@ -94,7 +145,11 @@ export function MessengerApp() {
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-muted-foreground">Select a conversation</p>
+              <div className="text-center text-muted-foreground">
+                <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium mb-2">Welcome to For Real</h3>
+                <p>Select someone to start chatting and discover your connection</p>
+              </div>
             </div>
           )}
         </div>
