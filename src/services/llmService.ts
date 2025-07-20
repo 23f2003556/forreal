@@ -89,7 +89,7 @@ class LLMService {
   }
 
   private createPrompt(context: string, userMessage: string): string {
-    return `You are a Gen Z person chatting on a dating app. Respond naturally with Gen Z slang, emojis, and dating energy. ${context}
+    return `You are chatting on a dating app. Respond politely and briefly with formal but friendly tone. Keep responses under 15 words. ${context}
 
 User: ${userMessage}
 Response:`;
@@ -103,35 +103,17 @@ Response:`;
     response = response.replace(/^(Response:|User:|Chat:|Reply:)/i, '').trim();
     
     // If response is too short or doesn't make sense, use contextual fallback
-    if (response.length < 5 || !this.isValidResponse(response)) {
+    if (response.length < 3 || !this.isValidResponse(response)) {
       return this.getContextualResponse(userMessage);
     }
 
-    // Add some Gen Z flair if missing
-    if (!this.hasGenZElements(response)) {
-      response = this.addGenZFlair(response);
-    }
-
-    return response;
+    // Keep response brief and formal
+    return response.split('.')[0] + (response.includes('.') ? '.' : '');
   }
 
   private isValidResponse(response: string): boolean {
     const invalidPatterns = /^[^a-zA-Z]*$|^\s*$|^\.+$|^[,;:!?\s]*$/;
     return !invalidPatterns.test(response) && response.length > 2;
-  }
-
-  private hasGenZElements(text: string): boolean {
-    const genZWords = ['fr', 'no cap', 'bestie', 'periodt', 'slay', 'vibe', 'lowkey', 'highkey', 'bet', 'fam'];
-    const emojis = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]/u;
-    
-    return genZWords.some(word => text.toLowerCase().includes(word)) || emojis.test(text);
-  }
-
-  private addGenZFlair(response: string): string {
-    const genZEndings = [' fr fr', ' no cap', ' bestie', ' 💯', ' ✨', ' 😭'];
-    const randomEnding = genZEndings[Math.floor(Math.random() * genZEndings.length)];
-    
-    return response + randomEnding;
   }
 
   private getContextualResponse(userMessage: string): string {
@@ -140,9 +122,9 @@ Response:`;
     // Greeting responses
     if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey')) {
       const greetings = [
-        "heyy! what's good bestie? 😊",
-        "omg hiiii! you're giving main character energy today ✨",
-        "hey there! how are you doing fr? 💫"
+        "Hello! How are you today?",
+        "Hi there! Nice to meet you.",
+        "Hello! Hope you're doing well."
       ];
       return greetings[Math.floor(Math.random() * greetings.length)];
     }
@@ -150,9 +132,9 @@ Response:`;
     // Question responses
     if (msg.includes('?')) {
       const questionResponses = [
-        "that's such a good question! let me think... 🤔",
-        "ooh interesting! tell me more about that bestie 💭",
-        "wait that's lowkey deep though, I'm here for it 🫶"
+        "That's interesting. Could you tell me more?",
+        "Good question. What do you think?",
+        "I'd like to hear your thoughts on that."
       ];
       return questionResponses[Math.floor(Math.random() * questionResponses.length)];
     }
@@ -160,27 +142,27 @@ Response:`;
     // Interest responses
     if (msg.includes('music')) {
       const musicResponses = [
-        "no way! what kind of music are you into? I'm always discovering new artists 🎵",
-        "music taste says everything about a person ngl... what's your current obsession? 🎧",
-        "bestie yes! music is literally my love language fr 💿"
+        "I enjoy music too. What genre do you prefer?",
+        "Music is wonderful. Any favorite artists?",
+        "That's nice. What's your current favorite song?"
       ];
       return musicResponses[Math.floor(Math.random() * musicResponses.length)];
     }
     
     if (msg.includes('food') || msg.includes('eat')) {
       const foodResponses = [
-        "don't even get me started on food! what's your go-to comfort meal? 🍕",
-        "okay food talk is my favorite... are you more of a sweet or savory person? 🤤",
-        "stop I'm literally always hungry! what did you have today? 😋"
+        "Food is always a good topic. What's your favorite cuisine?",
+        "I appreciate good food. Any restaurant recommendations?",
+        "That sounds delicious. Do you enjoy cooking?"
       ];
       return foodResponses[Math.floor(Math.random() * foodResponses.length)];
     }
     
     if (msg.includes('travel') || msg.includes('trip')) {
       const travelResponses = [
-        "travel stories hit different! where's the most beautiful place you've been? ✈️",
-        "wanderlust is real fr... what's on your bucket list? 🗺️",
-        "okay travel buddy! are you more of a beach or mountain person? 🏝️"
+        "Travel is enriching. Where would you like to visit?",
+        "I enjoy learning about new places. Any recent trips?",
+        "That sounds interesting. Do you prefer local or international travel?"
       ];
       return travelResponses[Math.floor(Math.random() * travelResponses.length)];
     }
@@ -188,20 +170,20 @@ Response:`;
     // Positive sentiment responses
     if (msg.includes('love') || msg.includes('amazing') || msg.includes('awesome')) {
       const positiveResponses = [
-        "your energy is literally contagious! I'm here for this vibe 🌟",
-        "stop you're making me smile! this conversation is everything 😊",
-        "the way you see things is actually beautiful fr 💕"
+        "Thank you for sharing that. It sounds wonderful.",
+        "That's lovely to hear. I appreciate your perspective.",
+        "It's nice to meet someone with such positivity."
       ];
       return positiveResponses[Math.floor(Math.random() * positiveResponses.length)];
     }
     
     // Default responses
     const defaultResponses = [
-      "that's actually so interesting! tell me more bestie 💭",
-      "you're giving such good vibes rn, I'm loving this energy ✨",
-      "wait pause... that's lowkey deep and I wasn't expecting it 🤯",
-      "okay but why does that sound exactly like something I would say? 👯‍♀️",
-      "not you being relatable af right now... we might be the same person 🫶"
+      "That's quite interesting. Please tell me more.",
+      "I appreciate you sharing that with me.",
+      "Thank you for that insight. What else would you like to discuss?",
+      "That's a thoughtful observation.",
+      "I'd like to know more about your thoughts on this."
     ];
     
     return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
