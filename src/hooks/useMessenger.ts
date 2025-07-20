@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { User } from '@/components/messenger/UserList';
 import { ChatInsights } from '@/components/messenger/InsightsPanel';
+import { llmService } from '@/services/llmService';
 
 export interface Message {
   id: string;
@@ -108,6 +109,11 @@ export function useMessenger() {
   });
   
   const mockAI = createMockAI();
+
+  // Initialize LLM service on component mount
+  useEffect(() => {
+    llmService.initialize().catch(console.error);
+  }, []);
   
   const sendMessage = useCallback((text: string) => {
     if (!selectedUserId) return;
@@ -149,26 +155,20 @@ export function useMessenger() {
     // Simulate other user typing and responding
     setTimeout(() => {
       setIsTyping(true);
-      setTimeout(() => {
+      setTimeout(async () => {
         setIsTyping(false);
-        const responses = [
-          "no cap that's actually so cool fr 😭✨",
-          "bestie you're giving main character energy and I'm here for it 💅",
-          "wait that's lowkey such a vibe though?? tell me more bestie",
-          "periodt! we're literally the same person omg 🫶",
-          "that's so slay honestly, you seem so genuine fr fr",
-          "not me getting butterflies from this convo 🦋 you're different different",
-          "bestie you just understood the assignment and I'm obsessed 💯",
-          "this is giving soulmate energy ngl... like are we twinning rn? 👯‍♀️",
-          "fr though you're such a green flag, rare to find someone real 🌱",
-          "stop why are you literally perfect?? this isn't fair 😩💕",
-          "you're giving me all the feels rn and I'm not mad about it 🥺",
-          "babe this conversation is everything, you really hit different 💫"
-        ];
+        
+        // Get conversation history for context
+        const conversationHistory = messages
+          .slice(-5) // Last 5 messages for context
+          .map(msg => msg.text);
+        
+        // Generate intelligent response using LLM service
+        const intelligentResponse = await llmService.generateResponse(text, conversationHistory);
         
         const responseMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: responses[Math.floor(Math.random() * responses.length)],
+          text: intelligentResponse,
           senderId: selectedUserId,
           recipientId: currentUser.id,
           timestamp: new Date(),
