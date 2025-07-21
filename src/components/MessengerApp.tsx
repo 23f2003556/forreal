@@ -34,7 +34,7 @@ export function MessengerApp() {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🤫</span>
-              <h1 className="text-xl font-bold text-foreground">For Real</h1>
+              <h1 className="text-xl font-bold text-foreground animate-fade-in hover-scale cursor-default">For Real</h1>
             </div>
             <div className="text-sm text-muted-foreground">
               Discover what's in their mind
