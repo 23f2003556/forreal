@@ -37,7 +37,7 @@ export function MessengerApp() {
               <h1 className="text-xl font-bold text-foreground">For Real</h1>
             </div>
             <div className="text-sm text-muted-foreground">
-              AI-Powered Dating Messenger with Emotional Intelligence
+              Discover what's in their mind
             </div>
           </div>
           
