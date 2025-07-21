@@ -6,6 +6,7 @@ export interface User {
   name: string;
   status: 'online' | 'away' | 'offline';
   lastSeen?: Date;
+  emoji: string;
 }
 
 interface UserListProps {
@@ -40,11 +41,9 @@ export function UserList({ users, selectedUserId, onSelectUser }: UserListProps)
             )}
           >
             <div className="relative">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {user.name.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-xl">
+                {user.emoji}
+              </div>
               <div className={cn(
                 "absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-chat-panel",
                 getStatusColor(user.status)

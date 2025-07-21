@@ -87,12 +87,12 @@ const createMockAI = (): MockAIAnalysis => ({
 export function useMessenger() {
   // Mock users - Indian names for dating app
   const [users] = useState<User[]>([
-    { id: '1', name: 'Priya Sharma', status: 'online' },
-    { id: '2', name: 'Arjun Patel', status: 'away' },
-    { id: '3', name: 'Ananya Singh', status: 'online' },
-    { id: '4', name: 'Vikram Reddy', status: 'offline', lastSeen: new Date(Date.now() - 3600000) },
-    { id: '5', name: 'Meera Gupta', status: 'online' },
-    { id: '6', name: 'Rohit Kumar', status: 'away' },
+    { id: '1', name: 'Priya Sharma', status: 'online', emoji: '😎' },
+    { id: '2', name: 'Arjun Patel', status: 'away', emoji: '🔥' },
+    { id: '3', name: 'Ananya Singh', status: 'online', emoji: '✨' },
+    { id: '4', name: 'Vikram Reddy', status: 'offline', lastSeen: new Date(Date.now() - 3600000), emoji: '🚀' },
+    { id: '5', name: 'Meera Gupta', status: 'online', emoji: '💫' },
+    { id: '6', name: 'Rohit Kumar', status: 'away', emoji: '⚡' },
   ]);
   
   const [currentUser] = useState({ id: 'me', name: 'You' });

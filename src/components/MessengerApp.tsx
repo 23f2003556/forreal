@@ -98,8 +98,8 @@ export function MessengerApp() {
               {/* Chat Header */}
               <div className="bg-chat-panel border-b border-border px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-medium">
-                    {selectedUser.name.slice(0, 2).toUpperCase()}
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg">
+                    {selectedUser.emoji}
                   </div>
                   <div>
                     <h3 className="font-medium text-foreground">{selectedUser.name}</h3>
