@@ -89,10 +89,10 @@ class LLMService {
   }
 
   private createPrompt(context: string, userMessage: string): string {
-    return `You are chatting on a dating app. Respond politely and briefly with formal but friendly tone. Keep responses under 15 words. ${context}
+    return `Respond briefly and formally to this message. Maximum 15 words. ${context}
 
-User: ${userMessage}
-Response:`;
+User message: ${userMessage}
+Your response:`;
   }
 
   private formatResponse(generated: string, userMessage: string): string {
