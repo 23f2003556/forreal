@@ -13,7 +13,7 @@ export interface Message {
 }
 
 export interface MockAIAnalysis {
-  analyzeMessage: (message: string, responseTime?: number) => {
+  analyzeMessage: (theirResponse: string, userMessage?: string, responseTime?: number) => {
     mood: ChatInsights['mood'];
     interests: string[];
     style: ChatInsights['behavioral']['communicationStyle'];
@@ -24,25 +24,27 @@ export interface MockAIAnalysis {
   };
 }
 
-// Mock AI analysis functions
+// Mock AI analysis functions - analyzing OTHER PERSON's responses to USER's messages
 const createMockAI = (): MockAIAnalysis => ({
-  analyzeMessage: (message: string, responseTime = 0) => {
-    const words = message.toLowerCase();
+  analyzeMessage: (theirResponse: string, userMessage?: string, responseTime = 0) => {
+    const words = theirResponse.toLowerCase();
+    const userWords = userMessage?.toLowerCase() || '';
     
-    // Simple sentiment analysis based on keywords
+    // Analyze their mood based on how they respond to user
     let mood: ChatInsights['mood'] = { current: 'neutral', confidence: 70 };
     
-    if (words.includes('!') || words.includes('amazing') || words.includes('awesome') || words.includes('love')) {
+    // Check if they're excited about what user said
+    if (words.includes('!') || words.includes('amazing') || words.includes('awesome') || words.includes('love') || words.includes('wow')) {
       mood = { current: 'excited', confidence: 85 };
-    } else if (words.includes('happy') || words.includes('good') || words.includes('great') || words.includes('😊')) {
+    } else if (words.includes('happy') || words.includes('good') || words.includes('great') || words.includes('nice') || words.includes('😊')) {
       mood = { current: 'happy', confidence: 80 };
-    } else if (words.includes('sad') || words.includes('bad') || words.includes('terrible') || words.includes('😢')) {
+    } else if (words.includes('okay') || words.includes('sure') || words.includes('alright') || theirResponse.length < 5) {
+      mood = { current: 'neutral', confidence: 60 };
+    } else if (words.includes('boring') || words.includes('whatever') || words.includes('meh')) {
       mood = { current: 'sad', confidence: 75 };
-    } else if (words.includes('angry') || words.includes('mad') || words.includes('furious')) {
-      mood = { current: 'angry', confidence: 80 };
     }
     
-    // Interest detection
+    // Interest detection - what they mention in response
     const interests: string[] = [];
     if (words.includes('music') || words.includes('song') || words.includes('band')) interests.push('Music');
     if (words.includes('movie') || words.includes('film') || words.includes('cinema')) interests.push('Movies');
@@ -52,11 +54,11 @@ const createMockAI = (): MockAIAnalysis => ({
     if (words.includes('book') || words.includes('reading') || words.includes('novel')) interests.push('Books');
     if (words.includes('tech') || words.includes('computer') || words.includes('programming')) interests.push('Technology');
     
-    // Communication style detection
+    // Their communication style in response
     let style: ChatInsights['behavioral']['communicationStyle'] = 'casual';
-    if (message.includes('!') && message.length > 20) style = 'enthusiastic';
-    else if (message.length < 10) style = 'brief';
-    else if (words.includes('please') || words.includes('thank you') || words.includes('sir') || words.includes('madam')) style = 'formal';
+    if (theirResponse.includes('!') && theirResponse.length > 20) style = 'enthusiastic';
+    else if (theirResponse.length < 10) style = 'brief';
+    else if (words.includes('please') || words.includes('thank you')) style = 'formal';
     
     return { mood, interests, style };
   },
@@ -84,27 +86,44 @@ const createMockAI = (): MockAIAnalysis => ({
   }
 });
 
-// Add compatibility analysis function
+// Analyze compatibility based on how they respond to user's messages
 const analyzeCompatibility = (
-  message: string, 
+  theirResponse: string,
+  userMessage: string,
   mood: ChatInsights['mood']['current'], 
   engagement: number,
+  responseTime: number,
   messageCount: number
 ): ChatInsights['compatibility'] => {
-  const words = message.toLowerCase();
+  const responseWords = theirResponse.toLowerCase();
+  const userWords = userMessage.toLowerCase();
   let score = 50;
   
-  // Positive indicators
-  if (mood === 'excited' || mood === 'happy') score += 20;
-  if (engagement > 70) score += 15;
-  if (words.includes('love') || words.includes('amazing') || words.includes('awesome')) score += 15;
-  if (messageCount > 5) score += 10; // More messages = more interest
+  // How enthusiastic are they about user's topics?
+  if (mood === 'excited' || mood === 'happy') score += 25;
+  if (engagement > 70) score += 20;
   
-  // Negative indicators
-  if (mood === 'sad' || mood === 'angry') score -= 20;
-  if (engagement < 30) score -= 15;
-  if (words.includes('boring') || words.includes('whatever') || words.includes('ok')) score -= 10;
-  if (message.length < 5) score -= 5; // Very short responses
+  // Do they ask questions back? (shows interest)
+  if (theirResponse.includes('?')) score += 15;
+  
+  // Do they elaborate on user's topics?
+  if (theirResponse.length > userMessage.length) score += 10;
+  
+  // Quick response shows interest
+  if (responseTime < 10) score += 15;
+  else if (responseTime > 60) score -= 10;
+  
+  // Positive response indicators
+  if (responseWords.includes('love') || responseWords.includes('amazing') || responseWords.includes('awesome')) score += 15;
+  if (responseWords.includes('tell me more') || responseWords.includes('really?') || responseWords.includes('interesting')) score += 20;
+  
+  // Negative response indicators  
+  if (responseWords.includes('okay') || responseWords.includes('cool') || responseWords.includes('nice')) score -= 5;
+  if (responseWords.includes('boring') || responseWords.includes('whatever')) score -= 25;
+  if (theirResponse.length < 8) score -= 15; // Very short responses show disinterest
+  
+  // More exchanges = building connection
+  if (messageCount > 8) score += 10;
   
   score = Math.max(0, Math.min(100, score));
   
@@ -113,19 +132,19 @@ const analyzeCompatibility = (
   
   if (score >= 80) {
     status = 'crush-worthy';
-    confidence = 85;
+    confidence = 90;
   } else if (score >= 65) {
     status = 'interested';
-    confidence = 75;
+    confidence = 80;
   } else if (score >= 45) {
     status = 'friend-zone';
-    confidence = 70;
+    confidence = 75;
   } else if (score >= 25) {
     status = 'ghosting-vibes';
-    confidence = 65;
+    confidence = 70;
   } else {
     status = 'red-flag';
-    confidence = 80;
+    confidence = 85;
   }
   
   return { status, confidence };
@@ -181,33 +200,7 @@ export function useMessenger() {
     setMessages(prev => [...prev, newMessage]);
     setLastMessageTime(now);
     
-    // Simulate AI analysis
-    const analysis = mockAI.analyzeMessage(text, responseTime);
-    const engagement = mockAI.updateEngagement(responseTime, text.split(' ').length);
-    
-    // Analyze compatibility
-    const compatibility = analyzeCompatibility(
-      text, 
-      analysis.mood.current, 
-      engagement.level,
-      messages.length + 1
-    );
-    
-    setInsights(prev => ({
-      mood: analysis.mood,
-      engagement: {
-        ...engagement,
-        responseTime: responseTime,
-        messageLength: text.split(' ').length,
-      },
-      interests: [...new Set([...prev.interests, ...analysis.interests])],
-      behavioral: {
-        communicationStyle: analysis.style,
-        attentiveness: engagement.attentiveness,
-      },
-      compatibility,
-      lastUpdated: now,
-    }));
+    // Don't analyze user's own message - wait for their response
     
     // Simulate other user typing and responding
     setTimeout(() => {
@@ -234,16 +227,36 @@ export function useMessenger() {
         setMessages(prev => [...prev, responseMessage]);
         setLastMessageTime(new Date());
         
-        // Update insights based on the response
-        const responseAnalysis = mockAI.analyzeMessage(responseMessage.text);
+        // NOW analyze insights based on how THEY responded to YOUR message
+        const userMessage = text; // The original message user sent
+        const theirResponseTime = Math.floor((new Date().getTime() - now.getTime()) / 1000);
+        
+        const responseAnalysis = mockAI.analyzeMessage(responseMessage.text, userMessage, theirResponseTime);
+        const engagement = mockAI.updateEngagement(theirResponseTime, responseMessage.text.split(' ').length);
+        
+        // Analyze compatibility based on their response to user's message
+        const compatibility = analyzeCompatibility(
+          responseMessage.text,
+          userMessage,
+          responseAnalysis.mood.current, 
+          engagement.level,
+          theirResponseTime,
+          messages.length + 2 // +1 for user message, +1 for their response
+        );
+        
         setInsights(prev => ({
-          ...prev,
           mood: responseAnalysis.mood,
+          engagement: {
+            ...engagement,
+            responseTime: theirResponseTime,
+            messageLength: responseMessage.text.split(' ').length,
+          },
           interests: [...new Set([...prev.interests, ...responseAnalysis.interests])],
           behavioral: {
-            ...prev.behavioral,
             communicationStyle: responseAnalysis.style,
+            attentiveness: engagement.attentiveness,
           },
+          compatibility,
           lastUpdated: new Date(),
         }));
       }, 2000 + Math.random() * 3000);
