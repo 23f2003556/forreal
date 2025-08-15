@@ -13,10 +13,10 @@ class LLMService {
     if (this.isInitialized) return;
 
     try {
-      // Use a small, fast text generation model
+      // Use a better conversational model
       this.textGenerator = await pipeline(
         'text-generation',
-        'Xenova/distilgpt2',
+        'onnx-community/Qwen2.5-0.5B-Instruct',
         { device: 'webgpu' }
       );
       this.isInitialized = true;
@@ -25,11 +25,21 @@ class LLMService {
       try {
         this.textGenerator = await pipeline(
           'text-generation',
-          'Xenova/distilgpt2'
+          'onnx-community/Qwen2.5-0.5B-Instruct'
         );
         this.isInitialized = true;
       } catch (fallbackError) {
         console.error('Failed to initialize LLM:', fallbackError);
+        // Try an even simpler fallback
+        try {
+          this.textGenerator = await pipeline(
+            'text-generation',
+            'onnx-community/gpt2'
+          );
+          this.isInitialized = true;
+        } catch (finalError) {
+          console.error('All LLM initialization attempts failed:', finalError);
+        }
       }
     }
   }
@@ -45,10 +55,11 @@ class LLMService {
       const prompt = this.createPrompt(context, userMessage);
 
       const result = await this.textGenerator(prompt, {
-        max_new_tokens: 50,
-        temperature: 0.8,
+        max_new_tokens: 30,
+        temperature: 0.7,
         do_sample: true,
-        return_full_text: false
+        return_full_text: false,
+        pad_token_id: 50256
       });
 
       const generatedText = result[0]?.generated_text || '';
@@ -89,10 +100,15 @@ class LLMService {
   }
 
   private createPrompt(context: string, userMessage: string): string {
-    return `Respond briefly and formally to this message. Maximum 15 words. ${context}
-
-User message: ${userMessage}
-Your response:`;
+    const messageType = this.analyzeMessageType(userMessage);
+    
+    return `<|im_start|>system
+You are a friendly, engaging person having a casual conversation. Respond naturally and personally to what the user says. Keep responses under 25 words and make them relevant to their message.
+<|im_end|>
+<|im_start|>user
+${userMessage}
+<|im_end|>
+<|im_start|>assistant`;
   }
 
   private formatResponse(generated: string, userMessage: string): string {
