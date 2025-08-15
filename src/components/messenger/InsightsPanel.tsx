@@ -169,13 +169,13 @@ export function InsightsPanel({ insights, isVisible, userName }: InsightsPanelPr
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-insight-secondary" />
-              Engagement Level
+              Connection Energy
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span>Overall Engagement</span>
+                <span>Connection Vibe</span>
                 <span className="font-medium">{insights.engagement.level}%</span>
               </div>
               <Progress value={insights.engagement.level} className="h-2" />
@@ -221,28 +221,6 @@ export function InsightsPanel({ insights, isVisible, userName }: InsightsPanelPr
           </CardContent>
         </Card>
 
-        {/* Behavioral Analysis */}
-        <Card className="bg-card/50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Communication Style</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Style</span>
-                <span className="font-medium capitalize">{insights.behavioral.communicationStyle}</span>
-              </div>
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Attentiveness</span>
-                <span className="font-medium">{insights.behavioral.attentiveness}%</span>
-              </div>
-              <Progress value={insights.behavioral.attentiveness} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
 
         <div className="text-xs text-muted-foreground text-center pt-2">
           Last updated: {insights.lastUpdated.toLocaleTimeString()}
