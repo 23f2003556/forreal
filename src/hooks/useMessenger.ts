@@ -84,6 +84,53 @@ const createMockAI = (): MockAIAnalysis => ({
   }
 });
 
+// Add compatibility analysis function
+const analyzeCompatibility = (
+  message: string, 
+  mood: ChatInsights['mood']['current'], 
+  engagement: number,
+  messageCount: number
+): ChatInsights['compatibility'] => {
+  const words = message.toLowerCase();
+  let score = 50;
+  
+  // Positive indicators
+  if (mood === 'excited' || mood === 'happy') score += 20;
+  if (engagement > 70) score += 15;
+  if (words.includes('love') || words.includes('amazing') || words.includes('awesome')) score += 15;
+  if (messageCount > 5) score += 10; // More messages = more interest
+  
+  // Negative indicators
+  if (mood === 'sad' || mood === 'angry') score -= 20;
+  if (engagement < 30) score -= 15;
+  if (words.includes('boring') || words.includes('whatever') || words.includes('ok')) score -= 10;
+  if (message.length < 5) score -= 5; // Very short responses
+  
+  score = Math.max(0, Math.min(100, score));
+  
+  let status: ChatInsights['compatibility']['status'];
+  let confidence: number;
+  
+  if (score >= 80) {
+    status = 'crush-worthy';
+    confidence = 85;
+  } else if (score >= 65) {
+    status = 'interested';
+    confidence = 75;
+  } else if (score >= 45) {
+    status = 'friend-zone';
+    confidence = 70;
+  } else if (score >= 25) {
+    status = 'ghosting-vibes';
+    confidence = 65;
+  } else {
+    status = 'red-flag';
+    confidence = 80;
+  }
+  
+  return { status, confidence };
+};
+
 export function useMessenger() {
   // Mock users - Indian names for dating app
   const [users] = useState<User[]>([
@@ -105,6 +152,7 @@ export function useMessenger() {
     engagement: { level: 50, responseTime: 0, messageLength: 0 },
     interests: [],
     behavioral: { communicationStyle: 'casual', attentiveness: 50 },
+    compatibility: { status: 'friend-zone', confidence: 50 },
     lastUpdated: new Date(),
   });
   
@@ -137,6 +185,14 @@ export function useMessenger() {
     const analysis = mockAI.analyzeMessage(text, responseTime);
     const engagement = mockAI.updateEngagement(responseTime, text.split(' ').length);
     
+    // Analyze compatibility
+    const compatibility = analyzeCompatibility(
+      text, 
+      analysis.mood.current, 
+      engagement.level,
+      messages.length + 1
+    );
+    
     setInsights(prev => ({
       mood: analysis.mood,
       engagement: {
@@ -149,6 +205,7 @@ export function useMessenger() {
         communicationStyle: analysis.style,
         attentiveness: engagement.attentiveness,
       },
+      compatibility,
       lastUpdated: now,
     }));
     
@@ -191,7 +248,7 @@ export function useMessenger() {
         }));
       }, 2000 + Math.random() * 3000);
     }, 1000);
-  }, [selectedUserId, currentUser.id, lastMessageTime, mockAI]);
+  }, [selectedUserId, currentUser.id, lastMessageTime, mockAI, messages.length]);
   
   const selectUser = useCallback((userId: string) => {
     setSelectedUserId(userId);
@@ -201,6 +258,7 @@ export function useMessenger() {
       engagement: { level: 50, responseTime: 0, messageLength: 0 },
       interests: [],
       behavioral: { communicationStyle: 'casual', attentiveness: 50 },
+      compatibility: { status: 'friend-zone', confidence: 50 },
       lastUpdated: new Date(),
     });
   }, []);

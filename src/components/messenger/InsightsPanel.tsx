@@ -1,7 +1,8 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Brain, Heart, Clock, TrendingUp, MessageCircle } from "lucide-react";
+import { Brain, Heart, Clock, TrendingUp, MessageCircle, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ChatInsights {
@@ -18,6 +19,10 @@ export interface ChatInsights {
   behavioral: {
     communicationStyle: 'formal' | 'casual' | 'enthusiastic' | 'brief';
     attentiveness: number; // 0-100
+  };
+  compatibility: {
+    status: 'crush-worthy' | 'interested' | 'friend-zone' | 'red-flag' | 'ghosting-vibes';
+    confidence: number;
   };
   lastUpdated: Date;
 }
@@ -49,6 +54,36 @@ export function InsightsPanel({ insights, isVisible, userName }: InsightsPanelPr
     }
   };
 
+  const getCompatibilityEmoji = (status: ChatInsights['compatibility']['status']) => {
+    switch (status) {
+      case 'crush-worthy': return '😍';
+      case 'interested': return '😌';
+      case 'friend-zone': return '😊';
+      case 'red-flag': return '🚩';
+      case 'ghosting-vibes': return '👻';
+    }
+  };
+
+  const getCompatibilityColor = (status: ChatInsights['compatibility']['status']) => {
+    switch (status) {
+      case 'crush-worthy': return 'text-pink-500';
+      case 'interested': return 'text-green-500';
+      case 'friend-zone': return 'text-blue-500';
+      case 'red-flag': return 'text-red-500';
+      case 'ghosting-vibes': return 'text-gray-500';
+    }
+  };
+
+  const getCompatibilityLabel = (status: ChatInsights['compatibility']['status']) => {
+    switch (status) {
+      case 'crush-worthy': return 'Crush Worthy';
+      case 'interested': return 'Interested';
+      case 'friend-zone': return 'Friend Zone';
+      case 'red-flag': return 'Red Flag';
+      case 'ghosting-vibes': return 'Ghosting Vibes';
+    }
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -64,6 +99,39 @@ export function InsightsPanel({ insights, isVisible, userName }: InsightsPanelPr
       </div>
 
       <div className="p-4 space-y-4">
+        {/* Compatibility Rating */}
+        <Card className="animate-insight-glow bg-card/50 border-2 border-pink-200/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Zap className="h-4 w-4 text-pink-500" />
+              Compatibility Vibe Check
+            </CardTitle>
+            <CardDescription>The dating potential reading ✨</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{getCompatibilityEmoji(insights.compatibility.status)}</span>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "font-medium",
+                    getCompatibilityColor(insights.compatibility.status)
+                  )}>
+                    {getCompatibilityLabel(insights.compatibility.status)}
+                  </span>
+                  <Badge variant="secondary" className="text-xs">
+                    {insights.compatibility.confidence}% sure
+                  </Badge>
+                </div>
+                <Progress 
+                  value={insights.compatibility.confidence} 
+                  className="mt-2 h-2"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Mood Analysis */}
         <Card className="animate-insight-glow bg-card/50">
           <CardHeader className="pb-3">
