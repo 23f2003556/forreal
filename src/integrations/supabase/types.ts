@@ -14,7 +14,148 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_insights: {
+        Row: {
+          chat_session_id: string
+          engagement_level: number
+          id: string
+          interest_score: number
+          key_topics: string[] | null
+          sentiment_score: number | null
+          updated_at: string
+          user_id: string
+          vibe_score: string
+        }
+        Insert: {
+          chat_session_id: string
+          engagement_level?: number
+          id?: string
+          interest_score?: number
+          key_topics?: string[] | null
+          sentiment_score?: number | null
+          updated_at?: string
+          user_id: string
+          vibe_score?: string
+        }
+        Update: {
+          chat_session_id?: string
+          engagement_level?: number
+          id?: string
+          interest_score?: number
+          key_topics?: string[] | null
+          sentiment_score?: number | null
+          updated_at?: string
+          user_id?: string
+          vibe_score?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_insights_chat_session_id_fkey"
+            columns: ["chat_session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          status: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          status?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          status?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          chat_session_id: string
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message_type: string
+          sender_id: string
+        }
+        Insert: {
+          chat_session_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          sender_id: string
+        }
+        Update: {
+          chat_session_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_session_id_fkey"
+            columns: ["chat_session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
