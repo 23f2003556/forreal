@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useConversationAnalysis } from './useConversationAnalysis';
 
 interface Message {
   id: string;
@@ -32,6 +33,7 @@ interface ChatSession {
 
 export function useChat() {
   const { user } = useAuth();
+  const { analyzeConversation } = useConversationAnalysis();
   const [currentChatSession, setCurrentChatSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -178,7 +180,18 @@ export function useChat() {
         sender_profile: profileData || { username: 'Unknown', display_name: 'Unknown', avatar_url: null }
       };
 
-      setMessages(prev => [...prev, newMessage]);
+      setMessages(prev => {
+        const newMessages = [...prev, newMessage];
+        
+        // Trigger analysis after adding the message (background task)
+        if (newMessages.length >= 3 && currentChatSession) {
+          setTimeout(() => {
+            analyzeConversation(currentChatSession.id, newMessages);
+          }, 1000);
+        }
+        
+        return newMessages;
+      });
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -237,7 +250,18 @@ export function useChat() {
               sender_profile: profileData || { username: 'Unknown', display_name: 'Unknown', avatar_url: null }
             };
 
-            setMessages(prev => [...prev, newMessage]);
+            setMessages(prev => {
+              const newMessages = [...prev, newMessage];
+              
+              // Trigger analysis for incoming messages too
+              if (newMessage.sender_id !== user?.id && newMessages.length >= 3 && currentChatSession) {
+                setTimeout(() => {
+                  analyzeConversation(currentChatSession.id, newMessages);
+                }, 1000);
+              }
+              
+              return newMessages;
+            });
           }
         }
       )
