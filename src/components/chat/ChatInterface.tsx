@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, MessageCircle, UserX, Sparkles } from "lucide-react";
+import { Send, MessageCircle, UserX, Sparkles, SkipForward } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
+import { usePresence } from "@/hooks/usePresence";
 import { ChatInsights } from "./ChatInsights";
 
 export function ChatInterface() {
@@ -17,8 +18,10 @@ export function ChatInterface() {
     loading, 
     startNewChat, 
     sendMessage, 
-    endChat 
+    endChat,
+    skipToNextUser
   } = useChat();
+  usePresence(); // Initialize presence tracking
   const [messageInput, setMessageInput] = useState("");
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -88,6 +91,16 @@ export function ChatInterface() {
                 <Sparkles className="h-3 w-3 mr-1" />
                 AI Insights
               </Badge>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={skipToNextUser}
+                disabled={loading}
+                className="hover:bg-accent"
+              >
+                <SkipForward className="h-4 w-4 mr-1" />
+                Skip
+              </Button>
               <Button 
                 variant="destructive" 
                 size="sm" 

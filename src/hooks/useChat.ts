@@ -39,27 +39,28 @@ export function useChat() {
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
-  // Find or create a chat session with a random user
+  // Find or create a chat session with an online user
   const startNewChat = async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      // First, try to find an available user to chat with
-      const { data: availableUsers, error: usersError } = await supabase
+      // First, try to find online users to chat with
+      const { data: onlineUsers, error: usersError } = await supabase
         .from('profiles')
         .select('user_id, username, display_name, avatar_url')
+        .eq('is_online', true)
         .neq('user_id', user.id)
-        .limit(10);
+        .limit(20);
 
       if (usersError) throw usersError;
 
-      if (!availableUsers || availableUsers.length === 0) {
-        throw new Error('No available users to chat with');
+      if (!onlineUsers || onlineUsers.length === 0) {
+        throw new Error('No online users available to chat with. Try again later!');
       }
 
-      // Pick a random user
-      const randomUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
+      // Pick a random online user
+      const randomUser = onlineUsers[Math.floor(Math.random() * onlineUsers.length)];
 
       // Check if a chat session already exists with this user
       const { data: existingSession, error: sessionError } = await supabase
@@ -100,7 +101,7 @@ export function useChat() {
       const otherUserId = chatSession.user1_id === user.id ? chatSession.user2_id : chatSession.user1_id;
       const otherUserProfile = chatSession.user1_id === user.id 
         ? chatSession.profiles 
-        : availableUsers.find(u => u.user_id === otherUserId);
+        : onlineUsers.find(u => u.user_id === otherUserId);
 
       setCurrentChatSession({
         ...chatSession,
@@ -272,6 +273,17 @@ export function useChat() {
     };
   }, [currentChatSession]);
 
+  const skipToNextUser = async () => {
+    if (!currentChatSession) return;
+    
+    // End current chat and start a new one
+    await endChat();
+    // Small delay to ensure cleanup
+    setTimeout(() => {
+      startNewChat();
+    }, 500);
+  };
+
   return {
     currentChatSession,
     messages,
@@ -280,6 +292,7 @@ export function useChat() {
     startNewChat,
     sendMessage,
     endChat,
+    skipToNextUser,
     setIsTyping,
   };
 }
