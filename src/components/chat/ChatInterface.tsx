@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, MessageCircle, UserX, Sparkles, SkipForward } from "lucide-react";
+import { Send, MessageCircle, UserX, Sparkles, SkipForward, Users } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
@@ -21,8 +21,25 @@ export function ChatInterface() {
     endChat,
     skipToNextUser
   } = useChat();
-  usePresence(); // Initialize presence tracking
+  const { getOnlineUsers } = usePresence(); // Initialize presence tracking
   const [messageInput, setMessageInput] = useState("");
+  const [onlineUserCount, setOnlineUserCount] = useState(0);
+
+  // Update online user count periodically
+  useEffect(() => {
+    const updateOnlineCount = async () => {
+      const onlineUsers = await getOnlineUsers();
+      setOnlineUserCount(onlineUsers.length);
+    };
+
+    // Initial load
+    updateOnlineCount();
+
+    // Update every 30 seconds
+    const interval = setInterval(updateOnlineCount, 30000);
+
+    return () => clearInterval(interval);
+  }, [getOnlineUsers]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,16 +67,32 @@ export function ChatInterface() {
             <CardTitle className="text-xl">Ready to meet someone new?</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground mb-6">
-              Start a conversation with a random stranger and get AI-powered insights about your chat!
-            </p>
+            <div className="mb-6">
+              <Badge 
+                variant="secondary" 
+                className="mb-4 bg-green-500/10 text-green-600 border-green-500/20"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                {onlineUserCount} {onlineUserCount === 1 ? 'user' : 'users'} online
+              </Badge>
+              <p className="text-muted-foreground">
+                Start a conversation with a random stranger and get AI-powered insights about your chat!
+              </p>
+            </div>
             <Button 
               onClick={startNewChat} 
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90"
+              disabled={loading || onlineUserCount === 0}
+              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 disabled:opacity-50"
             >
-              {loading ? "Finding someone..." : "Start New Chat"}
+              {loading ? "Finding someone..." : 
+               onlineUserCount === 0 ? "No users online" : 
+               "Start New Chat"}
             </Button>
+            {onlineUserCount === 0 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Check back later when more users are online
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
