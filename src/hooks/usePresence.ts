@@ -11,10 +11,13 @@ export function usePresence() {
 
     const setOnlineStatus = async (isOnline: boolean) => {
       try {
-        await supabase.rpc('update_user_presence', {
+        console.log('Updating user presence:', { userId: user.id, isOnline });
+        const { error } = await supabase.rpc('update_user_presence', {
           user_uuid: user.id,
           online_status: isOnline
         });
+        if (error) throw error;
+        console.log('Presence updated successfully');
       } catch (error) {
         console.error('Error updating presence:', error);
       }
@@ -22,6 +25,11 @@ export function usePresence() {
 
     // Set user as online when they connect
     setOnlineStatus(true);
+    
+    // Periodic heartbeat to maintain online status
+    const heartbeatInterval = setInterval(() => {
+      setOnlineStatus(true);
+    }, 60000); // Every minute
 
     // Set up presence channel
     presenceChannelRef.current = supabase.channel('online-users')
@@ -63,6 +71,7 @@ export function usePresence() {
     // Cleanup
     return () => {
       setOnlineStatus(false);
+      clearInterval(heartbeatInterval);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (presenceChannelRef.current) {

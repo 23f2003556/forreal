@@ -62,23 +62,23 @@ export function useChat() {
       // Pick a random online user
       const randomUser = onlineUsers[Math.floor(Math.random() * onlineUsers.length)];
 
+      console.log('Attempting to start chat with user:', randomUser);
+
       // Check if a chat session already exists with this user
       const { data: existingSession, error: sessionError } = await supabase
         .from('chat_sessions')
-        .select(`
-          *,
-          profiles!chat_sessions_user1_id_fkey(username, display_name, avatar_url),
-          profiles!chat_sessions_user2_id_fkey(username, display_name, avatar_url)
-        `)
+        .select('*')
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${randomUser.user_id}),and(user1_id.eq.${randomUser.user_id},user2_id.eq.${user.id})`)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
       let chatSession;
 
       if (existingSession && !sessionError) {
+        console.log('Found existing chat session:', existingSession.id);
         chatSession = existingSession;
       } else {
+        console.log('Creating new chat session...');
         // Create new chat session
         const { data: newSession, error: createError } = await supabase
           .from('chat_sessions')
@@ -87,21 +87,20 @@ export function useChat() {
             user2_id: randomUser.user_id,
             status: 'active'
           })
-          .select(`
-            *,
-            profiles!chat_sessions_user2_id_fkey(username, display_name, avatar_url)
-          `)
+          .select('*')
           .single();
 
-        if (createError) throw createError;
+        if (createError) {
+          console.error('Error creating chat session:', createError);
+          throw createError;
+        }
+        console.log('Created new chat session:', newSession.id);
         chatSession = newSession;
       }
 
       // Set the other user's profile data
       const otherUserId = chatSession.user1_id === user.id ? chatSession.user2_id : chatSession.user1_id;
-      const otherUserProfile = chatSession.user1_id === user.id 
-        ? chatSession.profiles 
-        : onlineUsers.find(u => u.user_id === otherUserId);
+      const otherUserProfile = onlineUsers.find(u => u.user_id === otherUserId) || randomUser;
 
       setCurrentChatSession({
         ...chatSession,
@@ -113,6 +112,8 @@ export function useChat() {
 
     } catch (error) {
       console.error('Error starting new chat:', error);
+      // Show user-friendly error message
+      alert(error instanceof Error ? error.message : 'Failed to start chat. Please try again.');
     } finally {
       setLoading(false);
     }

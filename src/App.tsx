@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ChatInterface } from "@/components/chat/ChatInterface";
+import { PresenceProvider } from "@/components/PresenceProvider";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
@@ -31,7 +32,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
-  return <AppLayout>{children}</AppLayout>;
+  return (
+    <PresenceProvider>
+      <AppLayout>{children}</AppLayout>
+    </PresenceProvider>
+  );
 }
 
 const App = () => (
