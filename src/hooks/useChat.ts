@@ -88,7 +88,7 @@ export function useChat() {
         const userId1 = user.id < randomUser.user_id ? user.id : randomUser.user_id;
         const userId2 = user.id < randomUser.user_id ? randomUser.user_id : user.id;
         
-        // Create new chat session with consistent user ordering
+        // Try to create new chat session with consistent user ordering
         const { data: newSession, error: createError } = await supabase
           .from('chat_sessions')
           .insert({
@@ -97,23 +97,26 @@ export function useChat() {
             status: 'active'
           })
           .select('*')
-          .single();
+          .maybeSingle();
 
         if (createError) {
-          // If still a duplicate key error, try to find the session that was just created
+          // If duplicate key error, try to find the session that might have been created by another request
           if (createError.code === '23505') {
-            console.log('Duplicate key error, attempting to find existing session...');
+            console.log('Duplicate key error, searching for existing session...');
+            
+            // Wait a moment and retry the search
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
             const { data: retrySession, error: retryError } = await supabase
               .from('chat_sessions')
               .select('*')
               .eq('status', 'active')
-              .or(`and(user1_id.eq.${user.id},user2_id.eq.${randomUser.user_id}),and(user1_id.eq.${randomUser.user_id},user2_id.eq.${user.id})`)
-              .limit(1)
-              .single();
+              .or(`and(user1_id.eq.${userId1},user2_id.eq.${userId2}),and(user1_id.eq.${userId2},user2_id.eq.${userId1})`)
+              .maybeSingle();
             
             if (retryError || !retrySession) {
               console.error('Error finding session after duplicate key error:', retryError);
-              throw createError;
+              throw new Error('Unable to create or find chat session. Please try again.');
             }
             
             console.log('Found session after duplicate key error:', retrySession.id);
@@ -122,9 +125,11 @@ export function useChat() {
             console.error('Error creating chat session:', createError);
             throw createError;
           }
-        } else {
+        } else if (newSession) {
           console.log('Created new chat session:', newSession.id);
           chatSession = newSession;
+        } else {
+          throw new Error('Failed to create chat session. Please try again.');
         }
       }
 
