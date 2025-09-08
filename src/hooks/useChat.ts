@@ -64,38 +64,68 @@ export function useChat() {
 
       console.log('Attempting to start chat with user:', randomUser);
 
-      // Check if a chat session already exists with this user
-      const { data: existingSession, error: sessionError } = await supabase
+      // Check if a chat session already exists with this user (handle both directions)
+      const { data: existingSessions, error: sessionError } = await supabase
         .from('chat_sessions')
         .select('*')
-        .or(`and(user1_id.eq.${user.id},user2_id.eq.${randomUser.user_id}),and(user1_id.eq.${randomUser.user_id},user2_id.eq.${user.id})`)
         .eq('status', 'active')
-        .maybeSingle();
+        .or(`and(user1_id.eq.${user.id},user2_id.eq.${randomUser.user_id}),and(user1_id.eq.${randomUser.user_id},user2_id.eq.${user.id})`);
 
       let chatSession;
 
-      if (existingSession && !sessionError) {
-        console.log('Found existing chat session:', existingSession.id);
-        chatSession = existingSession;
+      if (sessionError) {
+        console.error('Error checking existing sessions:', sessionError);
+        throw sessionError;
+      }
+
+      if (existingSessions && existingSessions.length > 0) {
+        console.log('Found existing chat session:', existingSessions[0].id);
+        chatSession = existingSessions[0];
       } else {
         console.log('Creating new chat session...');
-        // Create new chat session
+        
+        // Ensure consistent ordering to prevent duplicate key violations
+        const userId1 = user.id < randomUser.user_id ? user.id : randomUser.user_id;
+        const userId2 = user.id < randomUser.user_id ? randomUser.user_id : user.id;
+        
+        // Create new chat session with consistent user ordering
         const { data: newSession, error: createError } = await supabase
           .from('chat_sessions')
           .insert({
-            user1_id: user.id,
-            user2_id: randomUser.user_id,
+            user1_id: userId1,
+            user2_id: userId2,
             status: 'active'
           })
           .select('*')
           .single();
 
         if (createError) {
-          console.error('Error creating chat session:', createError);
-          throw createError;
+          // If still a duplicate key error, try to find the session that was just created
+          if (createError.code === '23505') {
+            console.log('Duplicate key error, attempting to find existing session...');
+            const { data: retrySession, error: retryError } = await supabase
+              .from('chat_sessions')
+              .select('*')
+              .eq('status', 'active')
+              .or(`and(user1_id.eq.${user.id},user2_id.eq.${randomUser.user_id}),and(user1_id.eq.${randomUser.user_id},user2_id.eq.${user.id})`)
+              .limit(1)
+              .single();
+            
+            if (retryError || !retrySession) {
+              console.error('Error finding session after duplicate key error:', retryError);
+              throw createError;
+            }
+            
+            console.log('Found session after duplicate key error:', retrySession.id);
+            chatSession = retrySession;
+          } else {
+            console.error('Error creating chat session:', createError);
+            throw createError;
+          }
+        } else {
+          console.log('Created new chat session:', newSession.id);
+          chatSession = newSession;
         }
-        console.log('Created new chat session:', newSession.id);
-        chatSession = newSession;
       }
 
       // Set the other user's profile data
