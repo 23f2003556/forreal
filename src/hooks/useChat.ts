@@ -119,7 +119,7 @@ export function useChat() {
     }
   };
 
-  const loadMessages = async (chatSessionId: string) => {
+  const loadMessages = useCallback(async (chatSessionId: string) => {
     try {
       const { data: messagesData, error } = await supabase
         .from('messages')
@@ -151,7 +151,7 @@ export function useChat() {
     } catch (error) {
       console.error('Error loading messages:', error);
     }
-  };
+  }, []);
 
   const sendMessage = async (content: string) => {
     if (!user || !currentChatSession) return;
@@ -279,14 +279,14 @@ export function useChat() {
     if (!user) return;
 
     const chatSessionsChannel = supabase
-      .channel('chat_sessions')
+      .channel('chat_sessions_listener')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'chat_sessions',
-          filter: `user1_id=eq.${user.id},user2_id=eq.${user.id}`
+          filter: `or(user1_id.eq.${user.id},user2_id.eq.${user.id})`
         },
         async (payload) => {
           console.log('New chat session detected:', payload.new);
@@ -306,6 +306,7 @@ export function useChat() {
               .single();
 
             if (otherUserProfile) {
+              console.log('Auto-joining chat session with:', otherUserProfile.display_name);
               setCurrentChatSession({
                 ...newSession,
                 other_user_profile: otherUserProfile
@@ -322,7 +323,7 @@ export function useChat() {
     return () => {
       supabase.removeChannel(chatSessionsChannel);
     };
-  }, [user, currentChatSession]);
+  }, [user, currentChatSession, loadMessages]);
 
   const skipToNextUser = async () => {
     if (!currentChatSession) return;
