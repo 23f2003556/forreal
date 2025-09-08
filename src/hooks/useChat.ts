@@ -217,7 +217,7 @@ export function useChat() {
     }
   };
 
-  // Set up real-time listeners
+  // Set up real-time listeners for messages
   useEffect(() => {
     if (!currentChatSession) return;
 
@@ -273,6 +273,56 @@ export function useChat() {
       supabase.removeChannel(messagesChannel);
     };
   }, [currentChatSession]);
+
+  // Set up real-time listener for new chat sessions
+  useEffect(() => {
+    if (!user) return;
+
+    const chatSessionsChannel = supabase
+      .channel('chat_sessions')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_sessions',
+          filter: `user1_id=eq.${user.id},user2_id=eq.${user.id}`
+        },
+        async (payload) => {
+          console.log('New chat session detected:', payload.new);
+          
+          // Only auto-join if we don't already have an active chat
+          if (!currentChatSession) {
+            const newSession = payload.new;
+            
+            // Determine the other user
+            const otherUserId = newSession.user1_id === user.id ? newSession.user2_id : newSession.user1_id;
+            
+            // Fetch the other user's profile
+            const { data: otherUserProfile } = await supabase
+              .from('profiles')
+              .select('user_id, username, display_name, avatar_url')
+              .eq('user_id', otherUserId)
+              .single();
+
+            if (otherUserProfile) {
+              setCurrentChatSession({
+                ...newSession,
+                other_user_profile: otherUserProfile
+              } as ChatSession & { other_user_profile: typeof otherUserProfile });
+
+              // Load messages for this chat
+              await loadMessages(newSession.id);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(chatSessionsChannel);
+    };
+  }, [user, currentChatSession]);
 
   const skipToNextUser = async () => {
     if (!currentChatSession) return;

@@ -86,7 +86,7 @@ export function usePresence() {
         .from('profiles')
         .select('user_id, username, display_name, avatar_url')
         .eq('is_online', true)
-        .neq('user_id', user?.id || '');
+        .neq('user_id', user?.id || '00000000-0000-0000-0000-000000000000');
 
       if (error) throw error;
       return data || [];
