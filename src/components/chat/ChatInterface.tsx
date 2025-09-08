@@ -9,19 +9,22 @@ import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
 import { ChatInsights } from "./ChatInsights";
-
 export function ChatInterface() {
-  const { user } = useAuth();
-  const { 
-    currentChatSession, 
-    messages, 
-    loading, 
-    startNewChat, 
-    sendMessage, 
+  const {
+    user
+  } = useAuth();
+  const {
+    currentChatSession,
+    messages,
+    loading,
+    startNewChat,
+    sendMessage,
     endChat,
     skipToNextUser
   } = useChat();
-  const { getOnlineUsers } = usePresence(); // Initialize presence tracking
+  const {
+    getOnlineUsers
+  } = usePresence(); // Initialize presence tracking
   const [messageInput, setMessageInput] = useState("");
   const [onlineUserCount, setOnlineUserCount] = useState(0);
 
@@ -37,28 +40,22 @@ export function ChatInterface() {
 
     // Update every 30 seconds
     const interval = setInterval(updateOnlineCount, 30000);
-
     return () => clearInterval(interval);
   }, [getOnlineUsers]);
-
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim()) return;
-
     await sendMessage(messageInput);
     setMessageInput("");
   };
-
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
-
   if (!currentChatSession) {
-    return (
-      <div className="h-full flex items-center justify-center p-8">
+    return <div className="h-full flex items-center justify-center p-8">
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <div className="flex justify-center mb-4">
@@ -68,10 +65,7 @@ export function ChatInterface() {
           </CardHeader>
           <CardContent>
             <div className="mb-6">
-              <Badge 
-                variant="secondary" 
-                className="mb-4 bg-green-500/10 text-green-600 border-green-500/20"
-              >
+              <Badge variant="secondary" className="mb-4 bg-green-500/10 text-green-600 border-green-500/20">
                 <Users className="h-4 w-4 mr-2" />
                 {onlineUserCount} {onlineUserCount === 1 ? 'user' : 'users'} online
               </Badge>
@@ -79,28 +73,17 @@ export function ChatInterface() {
                 Start a conversation with a random stranger and get AI-powered insights about your chat!
               </p>
             </div>
-            <Button 
-              onClick={startNewChat} 
-              disabled={loading || onlineUserCount === 0}
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 disabled:opacity-50"
-            >
-              {loading ? "Finding someone..." : 
-               onlineUserCount === 0 ? "No users online" : 
-               "Start New Chat"}
+            <Button onClick={startNewChat} disabled={loading || onlineUserCount === 0} className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 disabled:opacity-50">
+              {loading ? "Finding someone..." : onlineUserCount === 0 ? "No users online" : "Start New Chat"}
             </Button>
-            {onlineUserCount === 0 && (
-              <p className="text-xs text-muted-foreground mt-2">
+            {onlineUserCount === 0 && <p className="text-xs text-muted-foreground mt-2">
                 Check back later when more users are online
-              </p>
-            )}
+              </p>}
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="h-full flex">
+  return <div className="h-full flex">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Chat Header */}
@@ -124,22 +107,11 @@ export function ChatInterface() {
                 <Sparkles className="h-3 w-3 mr-1" />
                 AI Insights
               </Badge>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={skipToNextUser}
-                disabled={loading}
-                className="hover:bg-accent"
-              >
+              <Button variant="outline" size="sm" onClick={skipToNextUser} disabled={loading} className="hover:bg-accent">
                 <SkipForward className="h-4 w-4 mr-1" />
                 Skip
               </Button>
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                onClick={endChat}
-                className="bg-destructive hover:bg-destructive/90"
-              >
+              <Button variant="destructive" size="sm" onClick={endChat} className="bg-destructive hover:bg-destructive/90">
                 <UserX className="h-4 w-4 mr-1" />
                 End Chat
               </Button>
@@ -150,50 +122,27 @@ export function ChatInterface() {
         {/* Messages */}
         <ScrollArea className="flex-1 p-4 bg-chat-background">
           <div className="space-y-4">
-            {messages.map((message) => {
-              const isOwnMessage = message.sender_id === user?.id;
-              return (
-                <div
-                  key={message.id}
-                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} animate-message-slide-in`}
-                >
-                  <div
-                    className={`max-w-[70%] rounded-lg p-3 ${
-                      isOwnMessage
-                        ? 'bg-message-sent text-message-text ml-4'
-                        : 'bg-message-received text-message-text mr-4'
-                    }`}
-                    style={{
-                      boxShadow: 'var(--shadow-message)'
-                    }}
-                  >
+            {messages.map(message => {
+            const isOwnMessage = message.sender_id === user?.id;
+            return <div key={message.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} animate-message-slide-in`}>
+                  <div className={`max-w-[70%] rounded-lg p-3 ${isOwnMessage ? 'bg-message-sent text-message-text ml-4' : 'bg-message-received text-message-text mr-4'}`} style={{
+                boxShadow: 'var(--shadow-message)'
+              }}>
                     <p className="text-sm">{message.content}</p>
-                    <p className={`text-xs mt-1 ${
-                      isOwnMessage ? 'text-message-text/70' : 'text-message-text/70'
-                    }`}>
+                    <p className={`text-xs mt-1 ${isOwnMessage ? 'text-message-text/70' : 'text-message-text/70'}`}>
                       {formatTime(message.created_at)}
                     </p>
                   </div>
-                </div>
-              );
-            })}
+                </div>;
+          })}
           </div>
         </ScrollArea>
 
         {/* Message Input */}
         <div className="p-4 border-t border-border bg-chat-panel">
           <form onSubmit={handleSendMessage} className="flex space-x-2">
-            <Input
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 bg-input border-border focus:ring-primary"
-            />
-            <Button 
-              type="submit" 
-              disabled={!messageInput.trim()}
-              className="bg-primary hover:bg-primary/90"
-            >
+            <Input value={messageInput} onChange={e => setMessageInput(e.target.value)} placeholder="Type your message..." className="flex-1 bg-input border-border focus:ring-primary" />
+            <Button type="submit" disabled={!messageInput.trim()} className="bg-primary hover:bg-primary/90">
               <Send className="h-4 w-4" />
             </Button>
           </form>
@@ -202,6 +151,5 @@ export function ChatInterface() {
 
       {/* AI Insights Panel */}
       <ChatInsights chatSessionId={currentChatSession.id} />
-    </div>
-  );
+    </div>;
 }
