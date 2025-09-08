@@ -38,6 +38,38 @@ export function useChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [autoConnectAttempted, setAutoConnectAttempted] = useState(false);
+
+  // Auto-connect to available users
+  const autoConnectToChat = useCallback(async () => {
+    if (!user || currentChatSession || autoConnectAttempted || loading) return;
+    
+    setAutoConnectAttempted(true);
+    
+    try {
+      // Check if there are any online users available
+      const { data: onlineUsers, error: usersError } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url')
+        .eq('is_online', true)
+        .neq('user_id', user.id)
+        .limit(20);
+
+      if (usersError) {
+        console.error('Error checking online users for auto-connect:', usersError);
+        return;
+      }
+
+      if (onlineUsers && onlineUsers.length > 0) {
+        console.log('Auto-connecting to available users...');
+        await startNewChat();
+      } else {
+        console.log('No online users available for auto-connect');
+      }
+    } catch (error) {
+      console.error('Error in auto-connect:', error);
+    }
+  }, [user, currentChatSession, autoConnectAttempted, loading]);
 
   // Find or create a chat session with an online user
   const startNewChat = async () => {
@@ -360,6 +392,30 @@ export function useChat() {
     };
   }, [user, currentChatSession, loadMessages]);
 
+  // Auto-connect when user becomes available and no chat is active
+  useEffect(() => {
+    if (user && !currentChatSession && !autoConnectAttempted) {
+      // Small delay to allow presence to stabilize
+      const autoConnectTimer = setTimeout(() => {
+        autoConnectToChat();
+      }, 2000);
+
+      return () => clearTimeout(autoConnectTimer);
+    }
+  }, [user, currentChatSession, autoConnectAttempted, autoConnectToChat]);
+
+  // Reset auto-connect attempt when chat ends
+  useEffect(() => {
+    if (!currentChatSession && autoConnectAttempted) {
+      // Allow re-attempting auto-connect after chat ends
+      const resetTimer = setTimeout(() => {
+        setAutoConnectAttempted(false);
+      }, 3000);
+
+      return () => clearTimeout(resetTimer);
+    }
+  }, [currentChatSession, autoConnectAttempted]);
+
   const skipToNextUser = async () => {
     if (!currentChatSession) return;
     
@@ -381,5 +437,6 @@ export function useChat() {
     endChat,
     skipToNextUser,
     setIsTyping,
+    autoConnectToChat,
   };
 }

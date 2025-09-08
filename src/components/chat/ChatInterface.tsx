@@ -20,7 +20,8 @@ export function ChatInterface() {
     startNewChat,
     sendMessage,
     endChat,
-    skipToNextUser
+    skipToNextUser,
+    autoConnectToChat
   } = useChat();
   const {
     getOnlineUsers
@@ -42,6 +43,19 @@ export function ChatInterface() {
     const interval = setInterval(updateOnlineCount, 30000);
     return () => clearInterval(interval);
   }, [getOnlineUsers]);
+
+  // Trigger auto-connect when new users come online
+  useEffect(() => {
+    if (onlineUserCount > 0 && !currentChatSession && !loading) {
+      // Small delay to avoid too frequent connection attempts
+      const connectTimer = setTimeout(() => {
+        autoConnectToChat();
+      }, 1000);
+
+      return () => clearTimeout(connectTimer);
+    }
+  }, [onlineUserCount, currentChatSession, loading, autoConnectToChat]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim()) return;
@@ -59,9 +73,11 @@ export function ChatInterface() {
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <div className="flex justify-center mb-4">
-              <MessageCircle className="h-12 w-12 text-primary" />
+              <MessageCircle className="h-12 w-12 text-primary animate-pulse" />
             </div>
-            <CardTitle className="text-xl">Ready to meet someone new?</CardTitle>
+            <CardTitle className="text-xl">
+              {loading ? "Connecting you with someone..." : "Looking for someone to chat with..."}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-6">
@@ -70,15 +86,24 @@ export function ChatInterface() {
                 {onlineUserCount} {onlineUserCount === 1 ? 'user' : 'users'} online
               </Badge>
               <p className="text-muted-foreground">
-                Start a conversation with a random stranger and get AI-powered insights about your chat!
+                {loading 
+                  ? "We're finding someone perfect for you to chat with!"
+                  : onlineUserCount === 0 
+                    ? "Waiting for someone to come online..."
+                    : "The system automatically connects you with random users when they're available."
+                }
               </p>
+              {loading && (
+                <div className="mt-4 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
             </div>
-            <Button onClick={startNewChat} disabled={loading || onlineUserCount === 0} className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 disabled:opacity-50">
-              {loading ? "Finding someone..." : onlineUserCount === 0 ? "No users online" : "Start New Chat"}
-            </Button>
-            {onlineUserCount === 0 && <p className="text-xs text-muted-foreground mt-2">
-                Check back later when more users are online
-              </p>}
+            {onlineUserCount === 0 && (
+              <p className="text-xs text-muted-foreground">
+                More users will appear soon! The system connects you automatically.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>;
