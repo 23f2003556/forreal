@@ -38,38 +38,128 @@ export function useChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [autoConnectAttempted, setAutoConnectAttempted] = useState(false);
+  const [isInQueue, setIsInQueue] = useState(false);
+  const [queuePosition, setQueuePosition] = useState(0);
 
-  // Auto-connect to available users
-  const autoConnectToChat = useCallback(async () => {
-    if (!user || currentChatSession || autoConnectAttempted || loading) return;
+  // Queue-based chat matching
+  const joinQueue = useCallback(async (interests: string[] = [], genderPreference: string = '') => {
+    if (!user || isInQueue || currentChatSession) return;
     
-    setAutoConnectAttempted(true);
+    setIsInQueue(true);
+    setLoading(true);
     
     try {
-      // Check if there are any online users available
-      const { data: onlineUsers, error: usersError } = await supabase
-        .from('profiles')
-        .select('user_id, username, display_name, avatar_url')
-        .eq('is_online', true)
-        .neq('user_id', user.id)
-        .limit(20);
+      console.log('Joining chat queue...');
+      
+      // Add user to queue
+      const { error: queueError } = await supabase
+        .from('chat_queue')
+        .insert({
+          user_id: user.id,
+          interests,
+          gender_preference: genderPreference
+        });
 
-      if (usersError) {
-        console.error('Error checking online users for auto-connect:', usersError);
-        return;
+      if (queueError) {
+        // If user is already in queue, that's okay
+        if (queueError.code !== '23505') {
+          throw queueError;
+        }
       }
 
-      if (onlineUsers && onlineUsers.length > 0) {
-        console.log('Auto-connecting to available users...');
-        await startNewChat();
+      // Try to find a match
+      const { data: matchedUserId, error: matchError } = await supabase
+        .rpc('find_queue_match', { requesting_user_id: user.id });
+
+      if (matchError) {
+        console.error('Error finding match:', matchError);
+        throw matchError;
+      }
+
+      if (matchedUserId) {
+        console.log('Found match:', matchedUserId);
+        
+        // Create chat session with matched user
+        await createChatSession(matchedUserId);
+        setIsInQueue(false);
       } else {
-        console.log('No online users available for auto-connect');
+        console.log('No match found, waiting in queue...');
+        // Stay in queue and wait for real-time match
       }
     } catch (error) {
-      console.error('Error in auto-connect:', error);
+      console.error('Error joining queue:', error);
+      setIsInQueue(false);
+      setLoading(false);
     }
-  }, [user, currentChatSession, autoConnectAttempted, loading]);
+  }, [user, isInQueue, currentChatSession]);
+
+  const leaveQueue = useCallback(async () => {
+    if (!user || !isInQueue) return;
+    
+    try {
+      const { error } = await supabase
+        .from('chat_queue')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      
+      setIsInQueue(false);
+      setQueuePosition(0);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error leaving queue:', error);
+    }
+  }, [user, isInQueue]);
+
+  const createChatSession = async (otherUserId: string) => {
+    if (!user) return;
+
+    try {
+      // Fetch other user's profile
+      const { data: otherUserProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url')
+        .eq('user_id', otherUserId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Ensure consistent ordering to prevent duplicate key violations
+      const userId1 = user.id < otherUserId ? user.id : otherUserId;
+      const userId2 = user.id < otherUserId ? otherUserId : user.id;
+      
+      // Create new chat session
+      const { data: newSession, error: createError } = await supabase
+        .from('chat_sessions')
+        .insert({
+          user1_id: userId1,
+          user2_id: userId2,
+          status: 'active'
+        })
+        .select('*')
+        .single();
+
+      if (createError) {
+        console.error('Error creating chat session:', createError);
+        throw createError;
+      }
+
+      console.log('Created new chat session:', newSession.id);
+      
+      setCurrentChatSession({
+        ...newSession,
+        other_user_profile: otherUserProfile
+      });
+
+      // Load messages for this chat
+      await loadMessages(newSession.id);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error creating chat session:', error);
+      setLoading(false);
+    }
+  };
 
   // Find or create a chat session with an online user
   const startNewChat = async () => {
@@ -422,29 +512,90 @@ export function useChat() {
     };
   }, [user, currentChatSession, loadMessages]);
 
-  // Auto-connect when user becomes available and no chat is active
+  // Set up real-time listener for queue matches
   useEffect(() => {
-    if (user && !currentChatSession && !autoConnectAttempted) {
-      // Small delay to allow presence to stabilize
-      const autoConnectTimer = setTimeout(() => {
-        autoConnectToChat();
-      }, 2000);
+    if (!user || !isInQueue) return;
 
-      return () => clearTimeout(autoConnectTimer);
-    }
-  }, [user, currentChatSession, autoConnectAttempted, autoConnectToChat]);
+    const queueChannel = supabase
+      .channel('chat_queue_listener')
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'chat_queue',
+          filter: `user_id=eq.${user.id}`
+        },
+        async (payload) => {
+          console.log('User removed from queue, checking for match...');
+          
+          // Check if we have an active chat session now
+          const { data: activeSessions, error } = await supabase
+            .from('chat_sessions')
+            .select('*, profiles!chat_sessions_user1_id_fkey(*), profiles!chat_sessions_user2_id_fkey(*)')
+            .eq('status', 'active')
+            .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-  // Reset auto-connect attempt when chat ends
+          if (!error && activeSessions && activeSessions.length > 0) {
+            const session = activeSessions[0];
+            const otherUserId = session.user1_id === user.id ? session.user2_id : session.user1_id;
+            
+            // Get other user's profile
+            const { data: otherUserProfile } = await supabase
+              .from('profiles')
+              .select('user_id, username, display_name, avatar_url')
+              .eq('user_id', otherUserId)
+              .single();
+
+            if (otherUserProfile) {
+              console.log('Match found! Connecting to chat...');
+              setCurrentChatSession({
+                ...session,
+                other_user_profile: otherUserProfile
+              } as ChatSession & { other_user_profile: typeof otherUserProfile });
+
+              await loadMessages(session.id);
+            }
+          }
+          
+          setIsInQueue(false);
+          setLoading(false);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(queueChannel);
+    };
+  }, [user, isInQueue, loadMessages]);
+
+  // Update queue position
   useEffect(() => {
-    if (!currentChatSession && autoConnectAttempted) {
-      // Allow re-attempting auto-connect after chat ends
-      const resetTimer = setTimeout(() => {
-        setAutoConnectAttempted(false);
-      }, 3000);
+    if (!user || !isInQueue) return;
 
-      return () => clearTimeout(resetTimer);
-    }
-  }, [currentChatSession, autoConnectAttempted]);
+    const updateQueuePosition = async () => {
+      try {
+        const { data: queueEntries, error } = await supabase
+          .from('chat_queue')
+          .select('user_id, created_at')
+          .order('created_at', { ascending: true });
+
+        if (!error && queueEntries) {
+          const position = queueEntries.findIndex(entry => entry.user_id === user.id) + 1;
+          setQueuePosition(position);
+        }
+      } catch (error) {
+        console.error('Error updating queue position:', error);
+      }
+    };
+
+    updateQueuePosition();
+    const interval = setInterval(updateQueuePosition, 3000);
+
+    return () => clearInterval(interval);
+  }, [user, isInQueue]);
 
   const skipToNextUser = async () => {
     if (!currentChatSession) return;
@@ -462,11 +613,14 @@ export function useChat() {
     messages,
     loading,
     isTyping,
+    isInQueue,
+    queuePosition,
     startNewChat,
     sendMessage,
     endChat,
     skipToNextUser,
     setIsTyping,
-    autoConnectToChat,
+    joinQueue,
+    leaveQueue,
   };
 }

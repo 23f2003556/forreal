@@ -15,11 +15,15 @@ export function ChatInterface() {
     currentChatSession,
     messages,
     loading,
-    startNewChat,
+    isTyping,
+    isInQueue,
+    queuePosition,
     sendMessage,
     endChat,
     skipToNextUser,
-    autoConnectToChat
+    setIsTyping,
+    joinQueue,
+    leaveQueue,
   } = useChat();
   const { getOnlineUsers } = usePresence();
   const [messageInput, setMessageInput] = useState("");
@@ -42,17 +46,13 @@ export function ChatInterface() {
     return () => clearInterval(interval);
   }, [getOnlineUsers]);
 
-  // Trigger auto-connect when new users come online
-  useEffect(() => {
-    if (onlineUserCount > 0 && !currentChatSession && !loading) {
-      // Small delay to avoid too frequent connection attempts
-      const connectTimer = setTimeout(() => {
-        autoConnectToChat();
-      }, 1000);
+  const handleStartChat = () => {
+    joinQueue(selectedInterests, selectedGender);
+  };
 
-      return () => clearTimeout(connectTimer);
-    }
-  }, [onlineUserCount, currentChatSession, loading, autoConnectToChat]);
+  const handleCancelQueue = () => {
+    leaveQueue();
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,16 +168,32 @@ export function ChatInterface() {
               {onlineUserCount} {onlineUserCount === 1 ? 'user' : 'users'} online
             </Badge>
             
-            {loading ? (
+            {loading || isInQueue ? (
               <div className="mb-4">
                 <div className="w-8 h-8 mx-auto mb-2 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-muted-foreground">Connecting you with someone...</p>
+                {isInQueue ? (
+                  <div>
+                    <p className="text-muted-foreground mb-2">
+                      Waiting for someone to join... {queuePosition > 0 && `(Position: ${queuePosition})`}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCancelQueue}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">Connecting you with someone...</p>
+                )}
               </div>
             ) : (
               <Button
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-medium"
-                onClick={startNewChat}
+                onClick={handleStartChat}
                 disabled={onlineUserCount === 0}
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
