@@ -136,22 +136,52 @@ export function useChat() {
           if (createError.code === '23505') {
             console.log('Duplicate key error, searching for existing session...');
             
-            // Wait a moment and retry the search
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Wait a moment and retry the search with multiple attempts
+            let retrySession = null;
+            let attempts = 0;
+            const maxAttempts = 3;
             
-            const { data: retrySession, error: retryError } = await supabase
-              .from('chat_sessions')
-              .select('*')
-              .eq('status', 'active')
-              .or(`and(user1_id.eq.${userId1},user2_id.eq.${userId2}),and(user1_id.eq.${userId2},user2_id.eq.${userId1})`)
-              .maybeSingle();
+            while (!retrySession && attempts < maxAttempts) {
+              attempts++;
+              await new Promise(resolve => setTimeout(resolve, 200 * attempts)); // Increasing delay
+              
+              const { data, error } = await supabase
+                .from('chat_sessions')
+                .select('*')
+                .eq('status', 'active')
+                .or(`and(user1_id.eq.${userId1},user2_id.eq.${userId2}),and(user1_id.eq.${userId2},user2_id.eq.${userId1})`)
+                .limit(1);
+              
+              if (!error && data && data.length > 0) {
+                retrySession = data[0];
+                console.log(`Found session after duplicate key error (attempt ${attempts}):`, retrySession.id);
+                break;
+              }
+              
+              if (attempts === maxAttempts) {
+                console.error('Failed to find session after multiple attempts');
+                // Try one more time with a broader search
+                const { data: broadSearch } = await supabase
+                  .from('chat_sessions')
+                  .select('*')
+                  .eq('status', 'active')
+                  .or(`user1_id.eq.${user.id},user2_id.eq.${user.id},user1_id.eq.${randomUser.user_id},user2_id.eq.${randomUser.user_id}`)
+                  .limit(5);
+                
+                if (broadSearch && broadSearch.length > 0) {
+                  // Find a session that involves both users
+                  retrySession = broadSearch.find(session => 
+                    (session.user1_id === user.id && session.user2_id === randomUser.user_id) ||
+                    (session.user1_id === randomUser.user_id && session.user2_id === user.id)
+                  );
+                }
+              }
+            }
             
-            if (retryError || !retrySession) {
-              console.error('Error finding session after duplicate key error:', retryError);
+            if (!retrySession) {
               throw new Error('Unable to create or find chat session. Please try again.');
             }
             
-            console.log('Found session after duplicate key error:', retrySession.id);
             chatSession = retrySession;
           } else {
             console.error('Error creating chat session:', createError);
