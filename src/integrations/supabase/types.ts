@@ -58,6 +58,30 @@ export type Database = {
           },
         ]
       }
+      chat_queue: {
+        Row: {
+          created_at: string
+          gender_preference: string | null
+          id: string
+          interests: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          gender_preference?: string | null
+          id?: string
+          interests?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          gender_preference?: string | null
+          id?: string
+          interests?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_sessions: {
         Row: {
           created_at: string
@@ -167,6 +191,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_queue_match: {
+        Args: { requesting_user_id: string }
+        Returns: string
+      }
       update_user_presence: {
         Args: { online_status: boolean; user_uuid: string }
         Returns: undefined
