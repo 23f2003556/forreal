@@ -14,8 +14,6 @@ import { MessageCircle, Heart, Users } from "lucide-react";
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -30,19 +28,31 @@ export default function Auth() {
     });
   }, [navigate]);
 
+  const generateTempName = () => {
+    const adjectives = ['Cool', 'Smart', 'Happy', 'Swift', 'Brave', 'Kind', 'Bright', 'Calm', 'Epic', 'Wild'];
+    const nouns = ['Panda', 'Tiger', 'Eagle', 'Wolf', 'Fox', 'Bear', 'Lion', 'Owl', 'Hawk', 'Deer'];
+    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const number = Math.floor(Math.random() * 999) + 1;
+    return `${adjective}${noun}${number}`;
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Auto-generate temp name
+      const tempUsername = generateTempName();
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            username,
-            display_name: displayName
+            username: tempUsername,
+            display_name: tempUsername
           }
         }
       });
@@ -50,8 +60,8 @@ export default function Auth() {
       if (error) throw error;
 
       toast({
-        title: "Check your email",
-        description: "We sent you a confirmation link to complete your signup.",
+        title: "Welcome to the chat!",
+        description: `Your temp name is ${tempUsername}. Check your email to verify your account.`,
       });
     } catch (error: any) {
       toast({
@@ -253,29 +263,11 @@ export default function Auth() {
                 </div>
 
                 <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input
-                        id="username"
-                        placeholder="cooluser123"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                        className="bg-input border-border"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="displayName">Display Name</Label>
-                      <Input
-                        id="displayName"
-                        placeholder="Cool User"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        required
-                        className="bg-input border-border"
-                      />
-                    </div>
+                  <div className="space-y-2 text-center p-3 bg-muted/30 rounded-lg border border-border/50">
+                    <p className="text-sm font-medium text-foreground">🎯 Auto-Generated Temp Name</p>
+                    <p className="text-xs text-muted-foreground">
+                      You'll get a cool random name like "CoolPanda123" when you sign up!
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
@@ -306,7 +298,7 @@ export default function Auth() {
                     className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90" 
                     disabled={loading}
                   >
-                    {loading ? "Creating account..." : "Create Account"}
+                    {loading ? "Creating account..." : "Get My Temp Name & Join Chat!"}
                   </Button>
                 </form>
               </TabsContent>
