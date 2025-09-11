@@ -27,18 +27,18 @@ export default {
 				
 				/* Chat specific colors */
 				'chat-background': 'hsl(var(--chat-background))',
-				'chat-panel': 'hsl(var(--chat-panel))',
+				'chat-panel': 'hsla(var(--chat-panel))',
 				'message-sent': 'hsl(var(--message-sent))',
-				'message-received': 'hsl(var(--message-received))',
+				'message-received': 'hsla(var(--message-received))',
 				'message-text': 'hsl(var(--message-text))',
 				
-				/* Insight colors */
+				/* Insight colors - now neon! */
 				'insight-primary': 'hsl(var(--insight-primary))',
 				'insight-secondary': 'hsl(var(--insight-secondary))',
 				'insight-warning': 'hsl(var(--insight-warning))',
 				'insight-success': 'hsl(var(--insight-success))',
 				
-				/* Emotional state colors */
+				/* Emotional state neon colors */
 				'emotion-happy': 'hsl(var(--emotion-happy))',
 				'emotion-excited': 'hsl(var(--emotion-excited))',
 				'emotion-neutral': 'hsl(var(--emotion-neutral))',
@@ -47,7 +47,8 @@ export default {
 				
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -58,29 +59,30 @@ export default {
 					foreground: 'hsl(var(--destructive-foreground))'
 				},
 				muted: {
-					DEFAULT: 'hsl(var(--muted))',
+					DEFAULT: 'hsla(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))'
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					foreground: 'hsl(var(--accent-foreground))',
+					glow: 'hsl(var(--accent-glow))'
 				},
 				popover: {
-					DEFAULT: 'hsl(var(--popover))',
+					DEFAULT: 'hsla(var(--popover))',
 					foreground: 'hsl(var(--popover-foreground))'
 				},
 				card: {
-					DEFAULT: 'hsl(var(--card))',
+					DEFAULT: 'hsla(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
+					DEFAULT: 'hsla(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
 					primary: 'hsl(var(--sidebar-primary))',
 					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
+					accent: 'hsla(var(--sidebar-accent))',
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
+					border: 'hsla(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
@@ -124,12 +126,38 @@ export default {
 						opacity: '1'
 					}
 				},
-				'insight-glow': {
+				'glass-shine': {
+					'0%': {
+						transform: 'translateX(-100%)'
+					},
+					'100%': {
+						transform: 'translateX(100%)'
+					}
+				},
+				'neon-pulse': {
 					'0%, 100%': {
-						boxShadow: '0 0 20px hsla(var(--accent), 0.2)'
+						boxShadow: 'var(--glow-primary)'
 					},
 					'50%': {
-						boxShadow: '0 0 40px hsla(var(--accent), 0.4)'
+						boxShadow: 'var(--glow-primary), 0 0 60px hsl(280 100% 70% / 0.6)'
+					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0px)'
+					},
+					'50%': {
+						transform: 'translateY(-10px)'
+					}
+				},
+				'fade-in-up': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(20px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
 					}
 				}
 			},
@@ -138,7 +166,10 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'message-slide-in': 'message-slide-in 0.3s ease-out',
 				'typing-pulse': 'typing-pulse 1.5s ease-in-out infinite',
-				'insight-glow': 'insight-glow 2s ease-in-out infinite'
+				'glass-shine': 'glass-shine 2s ease-in-out infinite',
+				'neon-pulse': 'neon-pulse 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'fade-in-up': 'fade-in-up 0.6s ease-out'
 			}
 		}
 	},

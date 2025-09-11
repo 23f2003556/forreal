@@ -88,31 +88,31 @@ export function ChatInterface() {
       <div className="h-full flex flex-col items-center justify-center p-8 bg-background" onKeyDown={handleKeyPress}>
         <div className="w-full max-w-2xl">
           {/* Logo Section */}
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center">
-              <MessageCircle className="h-10 w-10 text-white" />
+          <div className="text-center mb-8 animate-fade-in-up">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center glass neon-glow animate-float">
+              <MessageCircle className="h-10 w-10 text-white drop-shadow-lg" />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Chitchat<span className="text-accent">.gg</span>
+              forreal
             </h1>
           </div>
 
           {/* Interests Section */}
-          <Card className="mb-6 bg-card border-border">
+          <Card className="mb-6 glass animate-fade-in-up">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-foreground flex items-center">
+                <h3 className="text-lg font-medium text-white flex items-center">
                   Your Interests 
-                  <Badge variant="secondary" className="ml-2 bg-green-500/20 text-green-400 border-green-500/30">
+                  <Badge variant="secondary" className="ml-2 bg-emotion-happy/20 text-emotion-happy border-emotion-happy/30 neon-glow-accent">
                     ON
                   </Badge>
                 </h3>
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
                   Manage
                 </Button>
               </div>
               
-              <div className="border-2 border-dashed border-border rounded-lg p-4 mb-4">
+              <div className="border-2 border-dashed border-white/20 rounded-lg p-4 mb-4 glass">
                 <div className="flex flex-wrap gap-2 mb-3">
                   {interests.map((interest) => (
                     <Badge
@@ -120,8 +120,8 @@ export function ChatInterface() {
                       variant={selectedInterests.includes(interest) ? "default" : "outline"}
                       className={`cursor-pointer transition-all ${
                         selectedInterests.includes(interest)
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-muted"
+                          ? "bg-primary text-white neon-glow"
+                          : "hover:bg-white/10 border-white/30 text-white"
                       }`}
                       onClick={() => handleInterestToggle(interest)}
                     >
@@ -129,7 +129,7 @@ export function ChatInterface() {
                     </Badge>
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-white/70">
                   You have {selectedInterests.length} interests. Click to add some.
                 </p>
               </div>
@@ -137,9 +137,9 @@ export function ChatInterface() {
           </Card>
 
           {/* Gender Filter */}
-          <Card className="mb-8 bg-card border-border">
+          <Card className="mb-8 glass animate-fade-in-up">
             <CardContent className="p-6">
-              <h3 className="text-lg font-medium text-foreground mb-4">Gender Filter:</h3>
+              <h3 className="text-lg font-medium text-white mb-4">Gender Filter:</h3>
               <div className="flex gap-4">
                 {genderOptions.map((gender) => (
                   <Button
@@ -148,8 +148,8 @@ export function ChatInterface() {
                     size="lg"
                     className={`flex-1 ${
                       selectedGender === gender
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted"
+                        ? "bg-primary text-white neon-glow"
+                        : "hover:bg-white/10 border-white/30 text-white"
                     }`}
                     onClick={() => setSelectedGender(gender)}
                   >
@@ -163,7 +163,7 @@ export function ChatInterface() {
 
           {/* Status and Start Button */}
           <div className="text-center">
-            <Badge variant="secondary" className="mb-4 bg-green-500/20 text-green-400 border-green-500/30">
+            <Badge variant="secondary" className="mb-4 bg-emotion-happy/20 text-emotion-happy border-emotion-happy/30 neon-glow-accent">
               <Users className="h-4 w-4 mr-2" />
               {onlineUserCount} {onlineUserCount === 1 ? 'user' : 'users'} online
             </Badge>
@@ -192,12 +192,12 @@ export function ChatInterface() {
             ) : (
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-medium"
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg font-medium neon-glow brutal-shadow animate-neon-pulse"
                 onClick={handleStartChat}
                 disabled={onlineUserCount === 0}
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
-                Start Text Chat
+                Start Real Chat
               </Button>
             )}
             

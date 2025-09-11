@@ -115,26 +115,26 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-chat-background via-background to-chat-panel flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-md space-y-8 animate-fade-in-up">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="flex justify-center space-x-2">
-            <MessageCircle className="h-8 w-8 text-primary" />
-            <Heart className="h-8 w-8 text-accent" />
-            <Users className="h-8 w-8 text-insight-primary" />
+          <div className="flex justify-center space-x-2 animate-float">
+            <MessageCircle className="h-8 w-8 text-primary neon-glow" />
+            <Heart className="h-8 w-8 text-accent neon-glow-accent" />
+            <Users className="h-8 w-8 text-insight-primary neon-glow-accent" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Connect & Chat
+            forreal
           </h1>
-          <p className="text-muted-foreground">
-            Meet new people and chat with AI-powered insights
+          <p className="text-white/70">
+            Connect authentically, chat for real
           </p>
         </div>
 
         {/* Auth Form */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+        <Card className="glass brutal-border">
           <CardHeader>
-            <CardTitle className="text-center text-card-foreground">
+            <CardTitle className="text-center text-white">
               Welcome
             </CardTitle>
           </CardHeader>
@@ -150,7 +150,7 @@ export default function Auth() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full border-border hover:bg-accent/50"
+                  className="w-full glass brutal-border text-white hover:neon-glow"
                   onClick={handleGoogleSignIn}
                   disabled={loading}
                 >
@@ -196,7 +196,7 @@ export default function Auth() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="bg-input border-border"
+                      className="bg-input border-border text-white placeholder:text-white/50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -208,12 +208,12 @@ export default function Auth() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="bg-input border-border"
+                      className="bg-input border-border text-white placeholder:text-white/50"
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-primary hover:bg-primary/90" 
+                    className="w-full bg-primary hover:bg-primary/90 text-white neon-glow brutal-shadow" 
                     disabled={loading}
                   >
                     {loading ? "Signing in..." : "Sign In"}

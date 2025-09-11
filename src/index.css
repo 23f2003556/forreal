@@ -2,129 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Messenger App Design System - Modern chat interface with AI insights */
+/* forreal - Glassmorphism New-Age Design System */
 
 @layer base {
   :root {
-    /* Main backgrounds */
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* New-age glassmorphism backgrounds */
+    --background: 240 15% 5%;
+    --foreground: 0 0% 100%;
     
-    /* Card and surface colors */
-    --card: 240 10% 5.9%;
-    --card-foreground: 0 0% 98%;
+    /* Glassmorphic surfaces */
+    --card: 240 20% 8% / 0.8;
+    --card-foreground: 0 0% 100%;
     
-    /* Chat specific colors */
-    --chat-background: 240 8% 6%;
-    --chat-panel: 240 10% 8%;
-    --message-sent: 267 84% 60%;
-    --message-received: 240 6% 15%;
-    --message-text: 0 0% 98%;
+    /* Chat glassmorphic colors */
+    --chat-background: 240 25% 3%;
+    --chat-panel: 240 20% 6% / 0.9;
+    --message-sent: 280 100% 70%;
+    --message-received: 240 15% 12% / 0.8;
+    --message-text: 0 0% 100%;
     
-    /* Insight colors */
-    --insight-primary: 184 85% 55%;
-    --insight-secondary: 267 84% 75%;
-    --insight-warning: 25 95% 53%;
-    --insight-success: 142 76% 36%;
+    /* Neon accent colors */
+    --insight-primary: 180 100% 70%;
+    --insight-secondary: 280 100% 80%;
+    --insight-warning: 40 100% 65%;
+    --insight-success: 150 80% 60%;
     
-    /* Emotional state colors */
-    --emotion-happy: 142 76% 50%;
-    --emotion-excited: 25 95% 60%;
-    --emotion-neutral: 220 13% 60%;
-    --emotion-sad: 220 90% 65%;
-    --emotion-angry: 0 84% 60%;
+    /* Emotional state neons */
+    --emotion-happy: 150 100% 70%;
+    --emotion-excited: 40 100% 70%;
+    --emotion-neutral: 220 20% 80%;
+    --emotion-sad: 220 100% 75%;
+    --emotion-angry: 0 100% 70%;
     
-    --popover: 240 10% 5.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 240 20% 8% / 0.95;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 267 84% 60%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary neon gradient colors */
+    --primary: 280 100% 70%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 280 100% 85%;
 
-    --secondary: 240 6% 15%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 240 15% 12%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 6% 15%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 240 15% 12% / 0.6;
+    --muted-foreground: 240 10% 70%;
 
-    --accent: 184 85% 55%;
-    --accent-foreground: 240 10% 3.9%;
+    /* Neon accent */
+    --accent: 180 100% 70%;
+    --accent-foreground: 240 15% 5%;
+    --accent-glow: 180 100% 85%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 100% 70%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 20%;
-    --input: 240 6% 15%;
-    --ring: 267 84% 60%;
+    --border: 240 30% 20% / 0.3;
+    --input: 240 20% 8% / 0.7;
+    --ring: 280 100% 70%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-    --gradient-insight: linear-gradient(135deg, hsl(var(--insight-primary)), hsl(var(--insight-secondary)));
-    --gradient-background: linear-gradient(180deg, hsl(var(--background)), hsl(var(--chat-background)));
+    /* Glassmorphic gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(280 100% 70%), hsl(180 100% 70%));
+    --gradient-glass: linear-gradient(135deg, 
+      hsla(240, 20%, 15%, 0.2), 
+      hsla(280, 100%, 70%, 0.1));
+    --gradient-background: radial-gradient(ellipse at top, 
+      hsl(280 100% 15%), 
+      hsl(240 25% 3%), 
+      hsl(240 30% 2%));
     
-    /* Animations */
+    /* Neon glows and shadows */
+    --glow-primary: 0 0 40px hsl(280 100% 70% / 0.4);
+    --glow-accent: 0 0 30px hsl(180 100% 70% / 0.3);
+    --glow-text: 0 2px 8px hsl(0 0% 0% / 0.8);
+    --shadow-glass: 0 8px 32px hsla(240, 30%, 5%, 0.4);
+    --shadow-inset: inset 0 1px 0 hsla(0, 0%, 100%, 0.1);
+    
+    /* Glass borders */
+    --border-glass: 1px solid hsla(0, 0%, 100%, 0.1);
+    
+    /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     
-    /* Shadows */
-    --shadow-message: 0 2px 8px hsla(var(--primary), 0.15);
-    --shadow-insight: 0 4px 20px hsla(var(--accent), 0.2);
-    --shadow-glow: 0 0 30px hsla(var(--primary), 0.3);
-
-    --sidebar-background: 240 10% 8%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar glass */
+    --sidebar-background: 240 20% 6% / 0.8;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 280 100% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 15% 12% / 0.6;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 30% 20% / 0.3;
+    --sidebar-ring: 280 100% 70%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Keep same values for dark mode consistency */
   }
 }
 
@@ -135,5 +109,46 @@
 
   body {
     @apply bg-background text-foreground;
+    background: var(--gradient-background);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* Text shadows for all text */
+  h1, h2, h3, h4, h5, h6, p, span, div, button {
+    text-shadow: var(--glow-text);
+  }
+}
+
+@layer components {
+  /* Glassmorphism utilities */
+  .glass {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px);
+    border: var(--border-glass);
+    box-shadow: var(--shadow-glass), var(--shadow-inset);
+  }
+  
+  .glass-strong {
+    background: hsla(240, 20%, 12%, 0.4);
+    backdrop-filter: blur(30px);
+    border: var(--border-glass);
+    box-shadow: var(--shadow-glass), var(--shadow-inset);
+  }
+  
+  .neon-glow {
+    box-shadow: var(--glow-primary);
+  }
+  
+  .neon-glow-accent {
+    box-shadow: var(--glow-accent);
+  }
+  
+  /* Neo-brutalist elements */
+  .brutal-shadow {
+    box-shadow: 4px 4px 0 hsl(280 100% 70%), 8px 8px 0 hsl(180 100% 70%);
+  }
+  
+  .brutal-border {
+    border: 3px solid hsl(0 0% 100%);
   }
 }
