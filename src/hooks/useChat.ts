@@ -67,25 +67,10 @@ export function useChat() {
         }
       }
 
-      // Try to find a match
-      const { data: matchedUserId, error: matchError } = await supabase
-        .rpc('find_queue_match', { requesting_user_id: user.id });
-
-      if (matchError) {
-        console.error('Error finding match:', matchError);
-        throw matchError;
-      }
-
-      if (matchedUserId) {
-        console.log('Found match:', matchedUserId);
-        
-        // Create chat session with matched user
-        await createChatSession(matchedUserId);
-        setIsInQueue(false);
-      } else {
-        console.log('No match found, waiting in queue...');
-        // Stay in queue and wait for real-time match
-      }
+      console.log('Added to queue, waiting for match...');
+      // Don't try to match immediately - let the real-time listener handle it
+      // This prevents race conditions when multiple users join simultaneously
+      
     } catch (error) {
       console.error('Error joining queue:', error);
       setIsInQueue(false);
@@ -475,20 +460,23 @@ export function useChat() {
           table: 'chat_queue'
         },
         async (payload) => {
-          console.log('New user joined queue:', payload.new);
+          console.log('Queue update detected:', payload.new);
           
-          // If we're in queue, try to find a match when someone else joins
-          if (isInQueue && payload.new.user_id !== user.id) {
-            console.log('Checking for match after new user joined queue...');
+          // Try to find a match whenever anyone joins the queue (including ourselves)
+          if (isInQueue) {
+            console.log('Checking for instant match...');
             
-            const { data: matchedUserId, error } = await supabase
-              .rpc('find_queue_match', { requesting_user_id: user.id });
+            // Small delay to ensure the insert is committed
+            setTimeout(async () => {
+              const { data: matchedUserId, error } = await supabase
+                .rpc('find_queue_match', { requesting_user_id: user.id });
 
-            if (!error && matchedUserId) {
-              console.log('Found match after queue update:', matchedUserId);
-              await createChatSession(matchedUserId);
-              setIsInQueue(false);
-            }
+              if (!error && matchedUserId) {
+                console.log('Instant match found:', matchedUserId);
+                await createChatSession(matchedUserId);
+                setIsInQueue(false);
+              }
+            }, 100);
           }
         }
       )
