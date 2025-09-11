@@ -461,6 +461,44 @@ export function useChat() {
     };
   }, [currentChatSession]);
 
+  // Set up real-time listener for queue changes - automatically match users
+  useEffect(() => {
+    if (!user) return;
+
+    const queueChannel = supabase
+      .channel('chat_queue_listener')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_queue'
+        },
+        async (payload) => {
+          console.log('New user joined queue:', payload.new);
+          
+          // If we're in queue, try to find a match when someone else joins
+          if (isInQueue && payload.new.user_id !== user.id) {
+            console.log('Checking for match after new user joined queue...');
+            
+            const { data: matchedUserId, error } = await supabase
+              .rpc('find_queue_match', { requesting_user_id: user.id });
+
+            if (!error && matchedUserId) {
+              console.log('Found match after queue update:', matchedUserId);
+              await createChatSession(matchedUserId);
+              setIsInQueue(false);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(queueChannel);
+    };
+  }, [user, isInQueue]);
+
   // Set up real-time listener for new chat sessions
   useEffect(() => {
     if (!user) return;
