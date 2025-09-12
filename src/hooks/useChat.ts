@@ -468,13 +468,36 @@ export function useChat() {
             
             // Small delay to ensure the insert is committed
             setTimeout(async () => {
-              const { data: matchedUserId, error } = await supabase
-                .rpc('find_queue_match', { requesting_user_id: user.id });
+              try {
+                // Find another user in the queue
+                const { data: queueUsers, error: queueError } = await supabase
+                  .from('chat_queue')
+                  .select('user_id')
+                  .neq('user_id', user.id)
+                  .order('created_at', { ascending: true })
+                  .limit(1);
 
-              if (!error && matchedUserId) {
-                console.log('Instant match found:', matchedUserId);
-                await createChatSession(matchedUserId);
-                setIsInQueue(false);
+                if (queueError) {
+                  console.error('Error finding queue match:', queueError);
+                  return;
+                }
+
+                if (queueUsers && queueUsers.length > 0) {
+                  const matchedUserId = queueUsers[0].user_id;
+                  console.log('Instant match found:', matchedUserId);
+                  
+                  // Remove both users from queue
+                  await supabase
+                    .from('chat_queue')
+                    .delete()
+                    .in('user_id', [user.id, matchedUserId]);
+                  
+                  // Create chat session
+                  await createChatSession(matchedUserId);
+                  setIsInQueue(false);
+                }
+              } catch (error) {
+                console.error('Error in queue matching:', error);
               }
             }, 100);
           }
