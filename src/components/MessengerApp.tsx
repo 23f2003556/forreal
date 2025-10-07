@@ -4,27 +4,30 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { MessageBubble } from "./messenger/MessageBubble";
 import { ChatInput } from "./messenger/ChatInput";
-import { UserList } from "./messenger/UserList";
 import { InsightsPanel } from "./messenger/InsightsPanel";
 import { TypingIndicator } from "./messenger/TypingIndicator";
-import { useMessenger } from "@/hooks/useMessenger";
-import { Settings, Eye, EyeOff, Brain, MessageCircle } from "lucide-react";
+import { useChat } from "@/hooks/useChat";
+import { useAuth } from "@/hooks/useAuth";
+import { Settings, Eye, EyeOff, Brain, MessageCircle, Users, Loader2 } from "lucide-react";
 
 export function MessengerApp() {
   const [showInsights, setShowInsights] = useState(true);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   
+  const { user } = useAuth();
   const {
-    users,
-    currentUser,
-    selectedUser,
+    currentChatSession,
     messages,
-    insights,
     isTyping,
-    sendMessage,
-    selectUser,
-  } = useMessenger();
+    isInQueue,
+    loading,
+    queuePosition,
+    joinQueue,
+    leaveQueue,
+    sendMessage: sendChatMessage,
+    endChat,
+  } = useChat();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-chat-background">
@@ -84,27 +87,32 @@ export function MessengerApp() {
       </header>
 
       <div className="flex h-[calc(100vh-80px)]">
-        {/* User List */}
-        <UserList
-          users={users}
-          selectedUserId={selectedUser?.id}
-          onSelectUser={selectUser}
-        />
-        
         {/* Chat Area */}
         <div className="flex-1 flex flex-col bg-chat-background">
-          {selectedUser ? (
+          {currentChatSession ? (
             <>
               {/* Chat Header */}
               <div className="bg-chat-panel border-b border-border px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg">
-                    {selectedUser.emoji}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-lg">
+                      👤
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-foreground">
+                        {currentChatSession.other_user_profile?.display_name || 'Anonymous User'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">Online</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-foreground">{selectedUser.name}</h3>
-                    <p className="text-sm text-muted-foreground capitalize">{selectedUser.status}</p>
-                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={endChat}
+                    className="text-destructive hover:bg-destructive/10"
+                  >
+                    End Chat
+                  </Button>
                 </div>
               </div>
               
@@ -114,9 +122,9 @@ export function MessengerApp() {
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-center text-muted-foreground">
                       <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Start a conversation with {selectedUser.name}</p>
+                      <p>Say hi to start the conversation!</p>
                       <p className="text-sm mt-2">
-                        {analyticsEnabled && "Discover your connection through AI insights"}
+                        {analyticsEnabled && "AI will analyze your chat in real-time"}
                       </p>
                     </div>
                   </div>
@@ -124,42 +132,76 @@ export function MessengerApp() {
                   messages.map((message) => (
                     <MessageBubble
                       key={message.id}
-                      message={message.text}
-                      isOwn={message.senderId === currentUser.id}
-                      timestamp={message.timestamp}
-                      senderName={message.senderId === currentUser.id ? undefined : selectedUser.name}
+                      message={message.content}
+                      isOwn={message.sender_id === user?.id}
+                      timestamp={new Date(message.created_at)}
+                      senderName={message.sender_id === user?.id ? undefined : message.sender_profile?.display_name}
                     />
                   ))
                 )}
                 
                 {isTyping && (
-                  <TypingIndicator userName={selectedUser.name} />
+                  <TypingIndicator userName={currentChatSession.other_user_profile?.display_name || 'User'} />
                 )}
               </div>
               
               {/* Chat Input */}
               <ChatInput
-                onSendMessage={sendMessage}
+                onSendMessage={(msg) => sendChatMessage(msg)}
                 disabled={!analyticsEnabled}
               />
             </>
+          ) : isInQueue ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="h-16 w-16 mx-auto mb-4 animate-spin text-primary" />
+                <h3 className="text-lg font-medium mb-2 text-foreground">Finding someone for you...</h3>
+                <p className="text-muted-foreground mb-4">
+                  {queuePosition > 0 ? `Position in queue: ${queuePosition}` : 'Searching for a match...'}
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={leaveQueue}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">Welcome to For Real</h3>
-                <p>Select someone to start chatting and discover your connection</p>
+              <div className="text-center glass p-8 rounded-2xl max-w-md mx-4">
+                <Users className="h-16 w-16 mx-auto mb-4 text-primary" />
+                <h3 className="text-2xl font-bold mb-2 text-foreground">Welcome to forreal</h3>
+                <p className="text-muted-foreground mb-6">
+                  Connect with someone new and discover what's really on their mind through AI-powered insights
+                </p>
+                <Button
+                  onClick={() => joinQueue()}
+                  disabled={loading}
+                  size="lg"
+                  className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold"
+                >
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start a New Chat"}
+                </Button>
               </div>
             </div>
           )}
         </div>
         
         {/* Insights Panel */}
-        {analyticsEnabled && selectedUser && (
+        {analyticsEnabled && currentChatSession && (
           <InsightsPanel
-            insights={insights}
+            insights={{
+              mood: { current: 'neutral', confidence: 50 },
+              engagement: { level: 50, responseTime: 0, messageLength: 0 },
+              interests: [],
+              behavioral: { communicationStyle: 'casual', attentiveness: 50 },
+              compatibility: { status: 'friend-zone', confidence: 50 },
+              lastUpdated: new Date(),
+            }}
             isVisible={showInsights}
-            userName={selectedUser.name}
+            userName={currentChatSession.other_user_profile?.display_name || 'User'}
           />
         )}
       </div>

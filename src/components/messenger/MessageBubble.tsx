@@ -14,7 +14,7 @@ export function MessageBubble({ message, isOwn, timestamp, senderName }: Message
       isOwn ? "justify-end" : "justify-start"
     )}>
       <div className={cn(
-        "max-w-[70%] rounded-lg px-4 py-2 shadow-sm",
+        "max-w-[70%] rounded-lg px-4 py-2",
         isOwn 
           ? "bg-message-sent text-message-text rounded-br-sm" 
           : "bg-message-received text-message-text rounded-bl-sm"
