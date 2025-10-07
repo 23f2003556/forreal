@@ -6,92 +6,93 @@
 
 @layer base {
   :root {
-    /* New-age glassmorphism backgrounds */
-    --background: 240 15% 5%;
-    --foreground: 0 0% 100%;
+    /* Bright colorful backgrounds */
+    --background: 280 100% 98%;
+    --foreground: 280 95% 15%;
     
-    /* Glassmorphic surfaces */
-    --card: 240 20% 8% / 0.8;
-    --card-foreground: 0 0% 100%;
+    /* Vibrant surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 280 95% 15%;
     
-    /* Chat glassmorphic colors */
-    --chat-background: 240 25% 3%;
-    --chat-panel: 240 20% 6% / 0.9;
-    --message-sent: 280 100% 70%;
-    --message-received: 240 15% 12% / 0.8;
-    --message-text: 0 0% 100%;
+    /* Chat bright colors */
+    --chat-background: 320 100% 97%;
+    --chat-panel: 0 0% 100% / 0.95;
+    --message-sent: 280 100% 65%;
+    --message-received: 180 100% 90%;
+    --message-text: 280 95% 15%;
     
-    /* Neon accent colors */
-    --insight-primary: 180 100% 70%;
-    --insight-secondary: 280 100% 80%;
-    --insight-warning: 40 100% 65%;
-    --insight-success: 150 80% 60%;
+    /* Vibrant accent colors */
+    --insight-primary: 280 100% 60%;
+    --insight-secondary: 320 100% 65%;
+    --insight-warning: 40 100% 55%;
+    --insight-success: 150 80% 50%;
     
-    /* Emotional state neons */
-    --emotion-happy: 150 100% 70%;
-    --emotion-excited: 40 100% 70%;
-    --emotion-neutral: 220 20% 80%;
-    --emotion-sad: 220 100% 75%;
-    --emotion-angry: 0 100% 70%;
+    /* Emotional state colors */
+    --emotion-happy: 150 100% 45%;
+    --emotion-excited: 40 100% 50%;
+    --emotion-neutral: 220 15% 60%;
+    --emotion-sad: 220 100% 60%;
+    --emotion-angry: 0 100% 60%;
     
-    --popover: 240 20% 8% / 0.95;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 280 95% 15%;
 
-    /* Primary neon gradient colors */
-    --primary: 280 100% 70%;
+    /* Primary vibrant colors */
+    --primary: 280 100% 65%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 280 100% 85%;
+    --primary-glow: 280 100% 75%;
 
-    --secondary: 240 15% 12%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 320 100% 90%;
+    --secondary-foreground: 280 95% 15%;
 
-    --muted: 240 15% 12% / 0.6;
-    --muted-foreground: 240 10% 70%;
+    --muted: 280 50% 95%;
+    --muted-foreground: 280 30% 40%;
 
-    /* Neon accent */
-    --accent: 180 100% 70%;
-    --accent-foreground: 240 15% 5%;
-    --accent-glow: 180 100% 85%;
+    /* Bright accent */
+    --accent: 180 100% 60%;
+    --accent-foreground: 0 0% 100%;
+    --accent-glow: 180 100% 75%;
 
-    --destructive: 0 100% 70%;
+    --destructive: 0 100% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 30% 20% / 0.3;
-    --input: 240 20% 8% / 0.7;
-    --ring: 280 100% 70%;
+    --border: 280 50% 90%;
+    --input: 280 50% 98%;
+    --ring: 280 100% 65%;
 
-    --radius: 1rem;
+    --radius: 1.2rem;
     
-    /* Glassmorphic gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(280 100% 70%), hsl(180 100% 70%));
+    /* Colorful gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(280 100% 65%), hsl(320 100% 70%), hsl(180 100% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(40 100% 70%), hsl(320 100% 75%));
     --gradient-glass: linear-gradient(135deg, 
-      hsla(240, 20%, 15%, 0.2), 
-      hsla(280, 100%, 70%, 0.1));
-    --gradient-background: radial-gradient(ellipse at top, 
-      hsl(280 100% 15%), 
-      hsl(240 25% 3%), 
-      hsl(240 30% 2%));
+      hsla(280, 100%, 95%, 0.6), 
+      hsla(320, 100%, 95%, 0.6));
+    --gradient-background: linear-gradient(135deg, 
+      hsl(280 100% 98%), 
+      hsl(320 100% 97%), 
+      hsl(180 100% 97%));
     
-    /* Minimal shadows only for depth */
-    --shadow-glass: 0 2px 8px hsla(240, 30%, 5%, 0.2);
-    --shadow-inset: inset 0 1px 0 hsla(0, 0%, 100%, 0.05);
+    /* Minimal shadows for depth */
+    --shadow-glass: 0 2px 12px hsla(280, 50%, 70%, 0.15);
+    --shadow-inset: inset 0 1px 0 hsla(0, 0%, 100%, 0.5);
     
-    /* Glass borders */
-    --border-glass: 1px solid hsla(0, 0%, 100%, 0.1);
+    /* Colorful borders */
+    --border-glass: 1px solid hsla(280, 100%, 90%, 0.5);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     
-    /* Sidebar glass */
-    --sidebar-background: 240 20% 6% / 0.8;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 280 100% 70%;
+    /* Sidebar bright */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 280 95% 15%;
+    --sidebar-primary: 280 100% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 15% 12% / 0.6;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 240 30% 20% / 0.3;
-    --sidebar-ring: 280 100% 70%;
+    --sidebar-accent: 280 50% 95%;
+    --sidebar-accent-foreground: 280 95% 15%;
+    --sidebar-border: 280 50% 90%;
+    --sidebar-ring: 280 100% 65%;
   }
 
   .dark {
@@ -113,24 +114,28 @@
 }
 
 @layer components {
-  /* Glassmorphism utilities */
+  /* Bright glassmorphism utilities */
   .glass {
     background: var(--gradient-glass);
     backdrop-filter: blur(20px);
     border: var(--border-glass);
-    box-shadow: var(--shadow-glass), var(--shadow-inset);
+    box-shadow: var(--shadow-glass);
   }
   
   .glass-strong {
-    background: hsla(240, 20%, 12%, 0.4);
+    background: hsla(280, 100%, 98%, 0.8);
     backdrop-filter: blur(30px);
     border: var(--border-glass);
-    box-shadow: var(--shadow-glass), var(--shadow-inset);
+    box-shadow: var(--shadow-glass);
   }
   
-  
-  /* Neo-brutalist elements */
+  /* Colorful border elements */
   .brutal-border {
-    border: 3px solid hsl(0 0% 100%);
+    border: 3px solid hsl(280 100% 65%);
+  }
+  
+  /* Colorful gradient backgrounds */
+  .gradient-bg {
+    background: var(--gradient-primary);
   }
 }

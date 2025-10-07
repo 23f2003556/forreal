@@ -14,20 +14,20 @@ export function MessageBubble({ message, isOwn, timestamp, senderName }: Message
       isOwn ? "justify-end" : "justify-start"
     )}>
       <div className={cn(
-        "max-w-[70%] rounded-lg px-4 py-2",
+        "max-w-[70%] rounded-2xl px-5 py-3 font-medium",
         isOwn 
-          ? "bg-message-sent text-message-text rounded-br-sm" 
-          : "bg-message-received text-message-text rounded-bl-sm"
+          ? "gradient-bg text-white rounded-br-sm" 
+          : "bg-message-received text-foreground rounded-bl-sm border-2 border-border"
       )}>
         {!isOwn && senderName && (
-          <div className="text-xs text-muted-foreground mb-1 font-medium">
+          <div className="text-xs text-foreground/60 mb-1 font-semibold">
             {senderName}
           </div>
         )}
-        <div className="break-words">{message}</div>
+        <div className="break-words text-base">{message}</div>
         <div className={cn(
-          "text-xs mt-1 opacity-70",
-          isOwn ? "text-right" : "text-left"
+          "text-xs mt-1 font-medium",
+          isOwn ? "text-white/70 text-right" : "text-foreground/50 text-left"
         )}>
           {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>

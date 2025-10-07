@@ -20,20 +20,20 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t border-border bg-chat-panel">
+    <form onSubmit={handleSubmit} className="flex gap-3 p-4 border-t-2 border-border glass-strong">
       <Input
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Type your message..."
+        placeholder="Type your message... 💬"
         disabled={disabled}
-        className="flex-1 bg-background border-border focus:ring-primary"
+        className="flex-1 bg-background border-2 border-border focus:ring-primary rounded-2xl text-foreground font-medium"
       />
       <Button 
         type="submit" 
         disabled={!message.trim() || disabled}
-        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+        className="gradient-bg hover:opacity-90 text-white rounded-2xl px-6"
       >
-        <Send className="h-4 w-4" />
+        <Send className="h-5 w-5" />
       </Button>
     </form>
   );

@@ -30,17 +30,19 @@ export function MessengerApp() {
   } = useChat();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-chat-background">
+    <div className="min-h-screen" style={{ background: 'var(--gradient-background)' }}>
       {/* Header */}
-      <header className="bg-chat-panel border-b border-border px-6 py-4">
+      <header className="glass-strong border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🤫</span>
-              <h1 className="text-xl font-bold text-foreground animate-fade-in hover-scale cursor-default">For Real</h1>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Discover what's in their mind
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-4xl animate-fade-in">🤫</span>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in hover-scale cursor-default">
+                  forreal
+                </h1>
+                <p className="text-xs text-muted-foreground">Discover what's in their mind</p>
+              </div>
             </div>
           </div>
           
@@ -67,15 +69,15 @@ export function MessengerApp() {
         
         {/* Settings Panel */}
         {showSettings && (
-          <div className="mt-4 p-4 bg-card rounded-lg border border-border">
+          <div className="mt-4 p-4 glass rounded-2xl border border-border">
             <div className="flex items-center space-x-2">
               <Switch
                 id="analytics"
                 checked={analyticsEnabled}
                 onCheckedChange={setAnalyticsEnabled}
               />
-              <Label htmlFor="analytics" className="flex items-center gap-2">
-                <Brain className="h-4 w-4" />
+              <Label htmlFor="analytics" className="flex items-center gap-2 text-foreground">
+                <Brain className="h-4 w-4 text-primary" />
                 Enable AI Analysis
               </Label>
             </div>
@@ -92,24 +94,24 @@ export function MessengerApp() {
           {currentChatSession ? (
             <>
               {/* Chat Header */}
-              <div className="bg-chat-panel border-b border-border px-6 py-4">
+              <div className="glass-strong border-b border-border px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-lg">
-                      👤
+                    <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-xl">
+                      🤫
                     </div>
                     <div>
-                      <h3 className="font-medium text-foreground">
+                      <h3 className="font-semibold text-foreground">
                         {currentChatSession.other_user_profile?.display_name || 'Anonymous User'}
                       </h3>
-                      <p className="text-sm text-muted-foreground">Online</p>
+                      <p className="text-sm font-medium text-primary">● Online</p>
                     </div>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={endChat}
-                    className="text-destructive hover:bg-destructive/10"
+                    className="text-destructive hover:bg-destructive/10 border-destructive/30"
                   >
                     End Chat
                   </Button>
@@ -153,16 +155,18 @@ export function MessengerApp() {
             </>
           ) : isInQueue ? (
             <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="h-16 w-16 mx-auto mb-4 animate-spin text-primary" />
-                <h3 className="text-lg font-medium mb-2 text-foreground">Finding someone for you...</h3>
-                <p className="text-muted-foreground mb-4">
+              <div className="text-center glass p-10 rounded-3xl max-w-md mx-4">
+                <div className="text-6xl mb-4 animate-bounce">🤫</div>
+                <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
+                <h3 className="text-xl font-bold mb-2 text-foreground">Finding someone for you...</h3>
+                <p className="text-muted-foreground mb-6">
                   {queuePosition > 0 ? `Position in queue: ${queuePosition}` : 'Searching for a match...'}
                 </p>
                 <Button
                   variant="outline"
                   onClick={leaveQueue}
                   disabled={loading}
+                  className="border-2"
                 >
                   Cancel
                 </Button>
@@ -170,19 +174,21 @@ export function MessengerApp() {
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <div className="text-center glass p-8 rounded-2xl max-w-md mx-4">
-                <Users className="h-16 w-16 mx-auto mb-4 text-primary" />
-                <h3 className="text-2xl font-bold mb-2 text-foreground">Welcome to forreal</h3>
-                <p className="text-muted-foreground mb-6">
-                  Connect with someone new and discover what's really on their mind through AI-powered insights
+              <div className="text-center glass-strong p-12 rounded-3xl max-w-lg mx-4 border-2 border-border">
+                <div className="text-7xl mb-6 animate-pulse">🤫</div>
+                <h3 className="text-3xl font-black mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                  Welcome to forreal
+                </h3>
+                <p className="text-foreground/70 mb-8 text-lg font-medium">
+                  Connect with someone new and discover what's really on their mind through AI-powered insights 🚀
                 </p>
                 <Button
                   onClick={() => joinQueue()}
                   disabled={loading}
                   size="lg"
-                  className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold"
+                  className="gradient-bg hover:opacity-90 text-white font-bold text-lg px-8 py-6 rounded-2xl"
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start a New Chat"}
+                  {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "Start a New Chat ✨"}
                 </Button>
               </div>
             </div>
