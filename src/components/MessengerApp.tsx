@@ -122,10 +122,10 @@ export function MessengerApp() {
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 ? (
                   <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Say hi to start the conversation!</p>
-                      <p className="text-sm mt-2">
+                    <div className="text-center">
+                      <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50 text-foreground" />
+                      <p className="text-foreground font-medium">Say hi to start the conversation!</p>
+                      <p className="text-sm mt-2 text-muted-foreground">
                         {analyticsEnabled && "AI will analyze your chat in real-time"}
                       </p>
                     </div>

@@ -8,18 +8,18 @@
   :root {
     /* Bright colorful backgrounds */
     --background: 280 100% 98%;
-    --foreground: 280 95% 15%;
+    --foreground: 280 90% 20%;
     
     /* Vibrant surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 280 95% 15%;
+    --card-foreground: 280 90% 20%;
     
     /* Chat bright colors */
     --chat-background: 320 100% 97%;
     --chat-panel: 0 0% 100% / 0.95;
     --message-sent: 280 100% 65%;
-    --message-received: 180 100% 90%;
-    --message-text: 280 95% 15%;
+    --message-received: 280 10% 95%;
+    --message-text: 280 90% 20%;
     
     /* Vibrant accent colors */
     --insight-primary: 280 100% 60%;
@@ -35,7 +35,7 @@
     --emotion-angry: 0 100% 60%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 280 95% 15%;
+    --popover-foreground: 280 90% 20%;
 
     /* Primary vibrant colors */
     --primary: 280 100% 65%;
@@ -43,10 +43,10 @@
     --primary-glow: 280 100% 75%;
 
     --secondary: 320 100% 90%;
-    --secondary-foreground: 280 95% 15%;
+    --secondary-foreground: 280 90% 20%;
 
     --muted: 280 50% 95%;
-    --muted-foreground: 280 30% 40%;
+    --muted-foreground: 280 40% 45%;
 
     /* Bright accent */
     --accent: 180 100% 60%;
@@ -56,8 +56,8 @@
     --destructive: 0 100% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 280 50% 90%;
-    --input: 280 50% 98%;
+    --border: 280 50% 85%;
+    --input: 280 30% 98%;
     --ring: 280 100% 65%;
 
     --radius: 1.2rem;
@@ -86,12 +86,12 @@
     
     /* Sidebar bright */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 280 95% 15%;
+    --sidebar-foreground: 280 90% 20%;
     --sidebar-primary: 280 100% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 280 50% 95%;
-    --sidebar-accent-foreground: 280 95% 15%;
-    --sidebar-border: 280 50% 90%;
+    --sidebar-accent-foreground: 280 90% 20%;
+    --sidebar-border: 280 50% 85%;
     --sidebar-ring: 280 100% 65%;
   }
 
