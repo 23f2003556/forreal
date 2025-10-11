@@ -2,6 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useConversationAnalysis } from './useConversationAnalysis';
+import { llmService } from '@/services/llmService';
+
+// Bot user ID constant
+const BOT_USER_ID = '00000000-0000-0000-0000-000000000000';
 
 interface Message {
   id: string;
@@ -40,6 +44,8 @@ export function useChat() {
   const [isTyping, setIsTyping] = useState(false);
   const [isInQueue, setIsInQueue] = useState(false);
   const [queuePosition, setQueuePosition] = useState(0);
+  const [isBotChat, setIsBotChat] = useState(false);
+  const [botTimeoutId, setBotTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   // Queue-based chat matching
   const joinQueue = useCallback(async (interests: string[] = [], genderPreference: string = '') => {
@@ -71,6 +77,14 @@ export function useChat() {
       // Don't try to match immediately - let the real-time listener handle it
       // This prevents race conditions when multiple users join simultaneously
       
+      // Set timeout to connect with bot if no match found in 5 seconds
+      const timeoutId = setTimeout(async () => {
+        console.log('No match found, connecting with AI bot...');
+        await connectWithBot();
+      }, 5000);
+      
+      setBotTimeoutId(timeoutId);
+      
     } catch (error) {
       console.error('Error joining queue:', error);
       setIsInQueue(false);
@@ -80,6 +94,12 @@ export function useChat() {
 
   const leaveQueue = useCallback(async () => {
     if (!user || !isInQueue) return;
+    
+    // Clear bot timeout if exists
+    if (botTimeoutId) {
+      clearTimeout(botTimeoutId);
+      setBotTimeoutId(null);
+    }
     
     try {
       const { error } = await supabase
@@ -95,10 +115,101 @@ export function useChat() {
     } catch (error) {
       console.error('Error leaving queue:', error);
     }
-  }, [user, isInQueue]);
+  }, [user, isInQueue, botTimeoutId]);
+
+  const connectWithBot = async () => {
+    if (!user) return;
+
+    // Clear bot timeout
+    if (botTimeoutId) {
+      clearTimeout(botTimeoutId);
+      setBotTimeoutId(null);
+    }
+
+    // Remove from queue
+    await supabase.from('chat_queue').delete().eq('user_id', user.id);
+    setIsInQueue(false);
+
+    // Create bot chat session
+    try {
+      await llmService.initialize();
+      
+      const { data: newSession, error: createError } = await supabase
+        .from('chat_sessions')
+        .insert({
+          user1_id: user.id,
+          user2_id: BOT_USER_ID,
+          status: 'active'
+        })
+        .select('*')
+        .single();
+
+      if (createError) throw createError;
+
+      console.log('Created bot chat session:', newSession.id);
+      
+      setCurrentChatSession({
+        ...newSession,
+        other_user_profile: {
+          username: 'AI Friend',
+          display_name: 'AI Friend',
+          avatar_url: null
+        }
+      });
+      
+      setIsBotChat(true);
+      setMessages([]);
+      setLoading(false);
+
+      // Send bot greeting after a delay
+      setTimeout(async () => {
+        await sendBotMessage(newSession.id, "Hey! 👋 I'm your AI chat buddy. How's it going?");
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error creating bot chat:', error);
+      setLoading(false);
+    }
+  };
+
+  const sendBotMessage = async (sessionId: string, content: string) => {
+    try {
+      const { data: messageData, error } = await supabase
+        .from('messages')
+        .insert({
+          chat_session_id: sessionId,
+          sender_id: BOT_USER_ID,
+          content: content.trim(),
+          message_type: 'text'
+        })
+        .select('*')
+        .single();
+
+      if (error) throw error;
+
+      const newMessage = {
+        ...messageData,
+        sender_profile: {
+          username: 'AI Friend',
+          display_name: 'AI Friend',
+          avatar_url: null
+        }
+      };
+
+      setMessages(prev => [...prev, newMessage]);
+    } catch (error) {
+      console.error('Error sending bot message:', error);
+    }
+  };
 
   const createChatSession = async (otherUserId: string) => {
     if (!user) return;
+
+    // Clear bot timeout if a real match is found
+    if (botTimeoutId) {
+      clearTimeout(botTimeoutId);
+      setBotTimeoutId(null);
+    }
 
     try {
       // Fetch other user's profile
@@ -366,6 +477,28 @@ export function useChat() {
         
         return newMessages;
       });
+
+      // If this is a bot chat, generate and send bot response
+      if (isBotChat && currentChatSession) {
+        setIsTyping(true);
+        
+        // Get conversation history for context
+        const conversationHistory = messages
+          .slice(-5)
+          .map(m => m.content);
+        
+        setTimeout(async () => {
+          try {
+            const botResponse = await llmService.generateResponse(content, conversationHistory);
+            await sendBotMessage(currentChatSession.id, botResponse);
+          } catch (error) {
+            console.error('Error generating bot response:', error);
+            await sendBotMessage(currentChatSession.id, "That's interesting! Tell me more.");
+          } finally {
+            setIsTyping(false);
+          }
+        }, 1500 + Math.random() * 1000); // Random delay 1.5-2.5s for natural feel
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -384,6 +517,7 @@ export function useChat() {
 
       setCurrentChatSession(null);
       setMessages([]);
+      setIsBotChat(false);
     } catch (error) {
       console.error('Error ending chat:', error);
     }
@@ -485,6 +619,12 @@ export function useChat() {
                 if (queueUsers && queueUsers.length > 0) {
                   const matchedUserId = queueUsers[0].user_id;
                   console.log('Instant match found:', matchedUserId);
+                  
+                  // Clear bot timeout since real match found
+                  if (botTimeoutId) {
+                    clearTimeout(botTimeoutId);
+                    setBotTimeoutId(null);
+                  }
                   
                   // Remove both users from queue
                   await supabase
@@ -664,6 +804,7 @@ export function useChat() {
     isTyping,
     isInQueue,
     queuePosition,
+    isBotChat,
     startNewChat,
     sendMessage,
     endChat,

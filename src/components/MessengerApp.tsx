@@ -23,6 +23,7 @@ export function MessengerApp() {
     isInQueue,
     loading,
     queuePosition,
+    isBotChat,
     joinQueue,
     leaveQueue,
     sendMessage: sendChatMessage,
@@ -98,11 +99,16 @@ export function MessengerApp() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-xl">
-                      🤫
+                      {isBotChat ? '🤖' : '🤫'}
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">
                         {currentChatSession.other_user_profile?.display_name || 'Anonymous User'}
+                        {isBotChat && (
+                          <span className="ml-2 text-xs px-2 py-1 rounded-full bg-accent/20 text-accent-foreground font-normal">
+                            AI
+                          </span>
+                        )}
                       </h3>
                       <p className="text-sm font-medium text-primary">● Online</p>
                     </div>
