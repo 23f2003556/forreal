@@ -18,13 +18,62 @@ serve(async (req) => {
   }
 
   try {
-    const { chatSessionId, messages, userId } = await req.json();
+    // Verify authentication and get user from JWT token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized - No auth token provided' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
-    if (!chatSessionId || !messages || !userId) {
+    // Create Supabase client with the user's auth token for authorization
+    const token = authHeader.replace('Bearer ', '');
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('Authentication error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized - Invalid token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Use authenticated user's ID, don't trust request body
+    const userId = user.id;
+    const { chatSessionId, messages } = await req.json();
+
+    if (!chatSessionId || !messages) {
       throw new Error('Missing required parameters');
     }
 
     console.log('Analyzing conversation for chat session:', chatSessionId, 'user:', userId);
+
+    // Verify the authenticated user is a participant in this chat session
+    const { data: session, error: sessionError } = await supabase
+      .from('chat_sessions')
+      .select('user1_id, user2_id, status')
+      .eq('id', chatSessionId)
+      .single();
+
+    if (sessionError || !session) {
+      console.error('Chat session not found:', sessionError);
+      return new Response(JSON.stringify({ error: 'Chat session not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Verify user is one of the participants
+    if (session.user1_id !== userId && session.user2_id !== userId) {
+      console.error('User not authorized for this chat session');
+      return new Response(JSON.stringify({ error: 'Forbidden - You are not a participant in this chat' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     // Prepare conversation text for analysis
     const conversationText = messages
@@ -110,8 +159,7 @@ Return only the JSON object, no other text.`;
 
     console.log('Parsed insights:', insights);
 
-    // Update database with insights
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Update database with insights (supabase client already created above for auth)
 
     const { data: existingInsight } = await supabase
       .from('chat_insights')

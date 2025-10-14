@@ -27,8 +27,8 @@ export function useConversationAnalysis() {
       const { data, error } = await supabase.functions.invoke('analyze-conversation', {
         body: {
           chatSessionId,
-          messages: messages.slice(-10), // Analyze last 10 messages for efficiency
-          userId: user.id
+          messages: messages.slice(-10) // Analyze last 10 messages for efficiency
+          // userId is now extracted from JWT token server-side for security
         }
       });
 
