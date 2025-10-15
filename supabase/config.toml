@@ -1,1 +1,7 @@
 project_id = "yzygrnctogbsxbzlvsow"
+
+[functions.analyze-conversation]
+verify_jwt = true
+
+[functions.bot-chat]
+verify_jwt = true

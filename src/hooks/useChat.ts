@@ -4,7 +4,8 @@ import { useAuth } from './useAuth';
 import { useConversationAnalysis } from './useConversationAnalysis';
 import { llmService } from '@/services/llmService';
 
-// Bot user ID constant
+// Bot user ID constant - stored server-side, never exposed to client
+// This is used only for client-side type checking and display logic
 const BOT_USER_ID = '00000000-0000-0000-0000-000000000000';
 
 interface Message {
@@ -170,10 +171,8 @@ export function useChat() {
     await supabase.from('chat_queue').delete().eq('user_id', user.id);
     setIsInQueue(false);
 
-    // Create bot chat session
+    // Create bot chat session (bot messages will be sent via edge function)
     try {
-      await llmService.initialize();
-      
       const { data: newSession, error: createError } = await supabase
         .from('chat_sessions')
         .insert({
@@ -201,44 +200,23 @@ export function useChat() {
       setMessages([]);
       setLoading(false);
 
-      // Send bot greeting after a delay
+      // Request bot greeting from server
       setTimeout(async () => {
-        await sendBotMessage(newSession.id, "Hey! 👋 I'm your AI chat buddy. How's it going?");
+        try {
+          await supabase.functions.invoke('bot-chat', {
+            body: { 
+              chatSessionId: newSession.id, 
+              userMessage: 'Hello' 
+            }
+          });
+        } catch (error) {
+          console.error('Error requesting bot greeting:', error);
+        }
       }, 1000);
       
     } catch (error) {
       console.error('Error creating bot chat:', error);
       setLoading(false);
-    }
-  };
-
-  const sendBotMessage = async (sessionId: string, content: string) => {
-    try {
-      const { data: messageData, error } = await supabase
-        .from('messages')
-        .insert({
-          chat_session_id: sessionId,
-          sender_id: BOT_USER_ID,
-          content: content.trim(),
-          message_type: 'text'
-        })
-        .select('*')
-        .single();
-
-      if (error) throw error;
-
-      const newMessage = {
-        ...messageData,
-        sender_profile: {
-          username: 'AI Friend',
-          display_name: 'AI Friend',
-          avatar_url: null
-        }
-      };
-
-      setMessages(prev => [...prev, newMessage]);
-    } catch (error) {
-      console.error('Error sending bot message:', error);
     }
   };
 
@@ -518,22 +496,20 @@ export function useChat() {
         return newMessages;
       });
 
-      // If this is a bot chat, generate and send bot response
+      // If this is a bot chat, request bot response from server
       if (isBotChat && currentChatSession) {
         setIsTyping(true);
         
-        // Get conversation history for context
-        const conversationHistory = messages
-          .slice(-5)
-          .map(m => m.content);
-        
         setTimeout(async () => {
           try {
-            const botResponse = await llmService.generateResponse(content, conversationHistory);
-            await sendBotMessage(currentChatSession.id, botResponse);
+            await supabase.functions.invoke('bot-chat', {
+              body: { 
+                chatSessionId: currentChatSession.id, 
+                userMessage: content 
+              }
+            });
           } catch (error) {
-            console.error('Error generating bot response:', error);
-            await sendBotMessage(currentChatSession.id, "That's interesting! Tell me more.");
+            console.error('Error requesting bot response:', error);
           } finally {
             setIsTyping(false);
           }
