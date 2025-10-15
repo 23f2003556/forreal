@@ -48,7 +48,7 @@ export function useChat() {
   const [isBotChat, setIsBotChat] = useState(false);
   const [botTimeoutId, setBotTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
-  // Queue-based chat matching - simplified for immediate connection
+  // Queue-based chat matching - uses secure database function
   const joinQueue = useCallback(async (interests: string[] = [], genderPreference: string = '') => {
     if (!user || isInQueue || currentChatSession) return;
     
@@ -58,34 +58,38 @@ export function useChat() {
     try {
       console.log('Looking for chat match...');
       
-      // First, check if anyone else is waiting in the queue
-      const { data: waitingUsers, error: queueCheckError } = await supabase
+      // Add user to queue first
+      const { error: insertError } = await supabase
         .from('chat_queue')
-        .select('user_id')
-        .neq('user_id', user.id)
-        .limit(1);
+        .insert({
+          user_id: user.id,
+          interests,
+          gender_preference: genderPreference
+        });
 
-      if (queueCheckError) throw queueCheckError;
+      if (insertError && insertError.code !== '23505') {
+        throw insertError;
+      }
 
-      // If someone is waiting, match with them immediately
-      if (waitingUsers && waitingUsers.length > 0) {
-        const matchedUserId = waitingUsers[0].user_id;
+      // Use secure database function to find a match
+      // This function has service role permissions to see all queue entries
+      const { data: matchedUserId, error: matchError } = await supabase
+        .rpc('find_queue_match', { requesting_user_id: user.id });
+
+      if (matchError) {
+        console.error('Error finding match:', matchError);
+      }
+
+      // If match found, create chat session
+      if (matchedUserId) {
         console.log('Found user in queue, matching immediately:', matchedUserId);
-        
-        // Remove both from queue
-        await supabase
-          .from('chat_queue')
-          .delete()
-          .in('user_id', [user.id, matchedUserId]);
-        
-        // Create chat session
         await createChatSession(matchedUserId);
         setIsInQueue(false);
         return;
       }
 
-      // No one waiting, check for online users
-      console.log('No one in queue, checking for online users...');
+      // No match found, check for online users
+      console.log('No immediate match, checking for online users...');
       const { data: onlineUsers, error: onlineError } = await supabase
         .from('profiles')
         .select('user_id')
@@ -95,23 +99,10 @@ export function useChat() {
 
       if (onlineError) throw onlineError;
 
-      // If there are online users (other than those already in active chats), add to queue briefly
+      // If there are online users, wait briefly for them to join queue
       if (onlineUsers && onlineUsers.length > 0) {
-        console.log('Found online users, adding to queue for potential match...');
+        console.log('Found online users, waiting for potential match...');
         
-        // Add to queue
-        const { error: insertError } = await supabase
-          .from('chat_queue')
-          .insert({
-            user_id: user.id,
-            interests,
-            gender_preference: genderPreference
-          });
-
-        if (insertError && insertError.code !== '23505') {
-          throw insertError;
-        }
-
         // Wait 2 seconds for a match, then connect to bot
         const timeoutId = setTimeout(async () => {
           console.log('No match found, connecting with AI bot...');
