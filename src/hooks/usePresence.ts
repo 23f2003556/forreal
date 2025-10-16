@@ -15,14 +15,12 @@ export function usePresence() {
 
     isUpdatingRef.current = true;
     try {
-      console.log('Updating user presence:', { userId: user.id, isOnline });
       const { error } = await supabase.rpc('update_user_presence', {
         user_uuid: user.id,
         online_status: isOnline
       });
       if (error) throw error;
       currentStatusRef.current = isOnline;
-      console.log('Presence updated successfully');
     } catch (error) {
       console.error('Error updating presence:', error);
     } finally {
@@ -46,13 +44,13 @@ export function usePresence() {
     // Set up presence channel
     presenceChannelRef.current = supabase.channel('online-users')
       .on('presence', { event: 'sync' }, () => {
-        console.log('Presence sync');
+        // Presence synced
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('User joined:', key, newPresences);
+      .on('presence', { event: 'join' }, () => {
+        // User joined
       })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('User left:', key, leftPresences);
+      .on('presence', { event: 'leave' }, () => {
+        // User left
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {

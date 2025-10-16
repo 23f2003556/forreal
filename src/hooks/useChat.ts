@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useConversationAnalysis } from './useConversationAnalysis';
 import { llmService } from '@/services/llmService';
+import { z } from 'zod';
+
+// Message validation schema
+const messageSchema = z.string()
+  .trim()
+  .min(1, 'Message cannot be empty')
+  .max(2000, 'Message is too long (max 2000 characters)');
 
 // Bot user ID constant - stored server-side, never exposed to client
 // This is used only for client-side type checking and display logic
@@ -56,7 +63,6 @@ export function useChat() {
     setLoading(true);
     
     try {
-      console.log('Looking for chat match...');
       
       // Add user to queue first
       const { error: insertError } = await supabase
@@ -82,37 +88,30 @@ export function useChat() {
 
       // If match found, create chat session
       if (matchedUserId) {
-        console.log('Found user in queue, matching immediately:', matchedUserId);
         await createChatSession(matchedUserId);
         setIsInQueue(false);
         return;
       }
 
-      // No match found, check for online users
-      console.log('No immediate match, checking for online users...');
+      // No match found, check for online users using secure function
       const { data: onlineUsers, error: onlineError } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('is_online', true)
-        .neq('user_id', user.id)
-        .limit(5);
+        .rpc('find_online_users_for_matching', { 
+          requesting_user_id: user.id,
+          max_results: 5
+        });
 
       if (onlineError) throw onlineError;
 
       // If there are online users, wait briefly for them to join queue
       if (onlineUsers && onlineUsers.length > 0) {
-        console.log('Found online users, waiting for potential match...');
-        
         // Wait 2 seconds for a match, then connect to bot
         const timeoutId = setTimeout(async () => {
-          console.log('No match found, connecting with AI bot...');
           await connectWithBot();
         }, 2000);
         
         setBotTimeoutId(timeoutId);
       } else {
         // No online users at all, connect to bot immediately
-        console.log('No online users found, connecting with AI bot immediately...');
         setIsInQueue(false);
         await connectWithBot();
       }
@@ -175,8 +174,6 @@ export function useChat() {
         .single();
 
       if (createError) throw createError;
-
-      console.log('Created bot chat session:', newSession.id);
       
       setCurrentChatSession({
         ...newSession,
@@ -249,8 +246,6 @@ export function useChat() {
         console.error('Error creating chat session:', createError);
         throw createError;
       }
-
-      console.log('Created new chat session:', newSession.id);
       
       setCurrentChatSession({
         ...newSession,
@@ -272,13 +267,12 @@ export function useChat() {
 
     setLoading(true);
     try {
-      // First, try to find online users to chat with
+      // First, try to find online users to chat with using secure function
       const { data: onlineUsers, error: usersError } = await supabase
-        .from('profiles')
-        .select('user_id, username, display_name, avatar_url')
-        .eq('is_online', true)
-        .neq('user_id', user.id)
-        .limit(20);
+        .rpc('find_online_users_for_matching', {
+          requesting_user_id: user.id,
+          max_results: 20
+        });
 
       if (usersError) throw usersError;
 
@@ -288,8 +282,6 @@ export function useChat() {
 
       // Pick a random online user
       const randomUser = onlineUsers[Math.floor(Math.random() * onlineUsers.length)];
-
-      console.log('Attempting to start chat with user:', randomUser);
 
       // Check if a chat session already exists with this user (handle both directions)
       const { data: existingSessions, error: sessionError } = await supabase
@@ -447,6 +439,17 @@ export function useChat() {
 
   const sendMessage = async (content: string) => {
     if (!user || !currentChatSession) return;
+
+    // Validate message content
+    try {
+      messageSchema.parse(content);
+    } catch (error) {
+      console.error('Message validation failed:', error);
+      if (error instanceof z.ZodError) {
+        throw new Error(error.errors[0].message);
+      }
+      throw new Error('Invalid message content');
+    }
 
     try {
       const { data: messageData, error } = await supabase

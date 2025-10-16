@@ -45,11 +45,48 @@ serve(async (req) => {
     const userId = user.id;
     const { chatSessionId, messages } = await req.json();
 
+    // Input validation
     if (!chatSessionId || !messages) {
       throw new Error('Missing required parameters');
     }
 
-    console.log('Starting conversation analysis');
+    // Validate messages array
+    if (!Array.isArray(messages) || messages.length === 0) {
+      throw new Error('Messages must be a non-empty array');
+    }
+
+    if (messages.length > 50) {
+      throw new Error('Too many messages (max 50)');
+    }
+
+    // Rate limiting check
+    const { data: rateLimitData } = await supabase
+      .from('rate_limits')
+      .select('last_request_at')
+      .eq('user_id', userId)
+      .eq('action', 'analyze_conversation')
+      .maybeSingle();
+
+    if (rateLimitData) {
+      const timeSince = Date.now() - new Date(rateLimitData.last_request_at).getTime();
+      if (timeSince < 30000) { // 30 second cooldown
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please wait 30 seconds between analyses.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // Update rate limit
+    await supabase
+      .from('rate_limits')
+      .upsert({
+        user_id: userId,
+        action: 'analyze_conversation',
+        last_request_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,action'
+      });
 
     // Verify the authenticated user is a participant in this chat session
     const { data: session, error: sessionError } = await supabase
@@ -80,8 +117,6 @@ serve(async (req) => {
       .map((msg: any) => `${msg.sender_id === userId ? 'Me' : 'Them'}: ${msg.content}`)
       .join('\n');
 
-    console.log('Analysis started, message count:', messages.length);
-
     // Create OpenAI analysis prompt
     const prompt = `Analyze this chat conversation and provide insights in JSON format. Focus on the perspective of the user who says "Me:".
 
@@ -105,8 +140,6 @@ Base your analysis on:
 - Overall conversational flow
 
 Return only the JSON object, no other text.`;
-
-    console.log('Calling OpenAI API...');
 
     // Call OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -136,10 +169,8 @@ Return only the JSON object, no other text.`;
     }
 
     const data = await response.json();
-    console.log('OpenAI response received');
 
     const aiAnalysis = data.choices[0].message.content.trim();
-    console.log('Analysis completed successfully');
 
     // Parse the JSON response
     let insights;
@@ -206,9 +237,7 @@ Return only the JSON object, no other text.`;
       throw new Error('Failed to save insights to database');
     }
 
-    console.log('Insights saved to database successfully');
-
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       success: true, 
       insights: result.data 
     }), {

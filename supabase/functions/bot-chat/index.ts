@@ -133,17 +133,58 @@ serve(async (req) => {
       });
     }
 
-    console.log('Bot chat request from user:', user.id);
-
     // Parse request body
     const { chatSessionId, userMessage } = await req.json();
 
+    // Input validation
     if (!chatSessionId || !userMessage) {
       return new Response(JSON.stringify({ error: 'Missing chatSessionId or userMessage' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Validate message length
+    if (typeof userMessage !== 'string' || userMessage.length > 2000) {
+      return new Response(JSON.stringify({ error: 'Message too long (max 2000 characters)' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Rate limiting check
+    const supabaseServiceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: rateLimitData } = await supabaseServiceClient
+      .from('rate_limits')
+      .select('last_request_at')
+      .eq('user_id', user.id)
+      .eq('action', 'bot_chat')
+      .maybeSingle();
+
+    if (rateLimitData) {
+      const timeSince = Date.now() - new Date(rateLimitData.last_request_at).getTime();
+      if (timeSince < 1000) { // 1 second cooldown
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please wait before sending another message.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Update rate limit
+    await supabaseServiceClient
+      .from('rate_limits')
+      .upsert({
+        user_id: user.id,
+        action: 'bot_chat',
+        last_request_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,action'
+      });
 
     // Verify user is participant in the chat session
     const { data: session, error: sessionError } = await supabaseClient
@@ -198,14 +239,6 @@ serve(async (req) => {
     // Generate bot response
     const botResponse = generateBotResponse(userMessage, conversationHistory);
 
-    console.log('Generated bot response for session:', chatSessionId);
-
-    // Create service role client to insert bot message
-    const supabaseServiceClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     // Insert bot message using service role (bypasses RLS)
     const { data: messageData, error: messageError } = await supabaseServiceClient
       .from('messages')
@@ -225,8 +258,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    console.log('Bot message sent:', messageData.id);
 
     return new Response(JSON.stringify({ success: true, message: messageData }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
