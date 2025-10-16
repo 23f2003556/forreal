@@ -9,15 +9,33 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { MessageCircle, Heart, Users } from "lucide-react";
+import { MessageCircle, Heart, Users, Check, X } from "lucide-react";
+import { z } from "zod";
+
+const passwordSchema = z.string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+  .regex(/[a-z]/, 'Password must contain a lowercase letter')
+  .regex(/[0-9]/, 'Password must contain a number');
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signInWithGoogle } = useAuth();
+
+  // Password requirements state
+  const passwordRequirements = {
+    minLength: password.length >= 8,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /[0-9]/.test(password),
+  };
+
+  const isPasswordValid = Object.values(passwordRequirements).every(Boolean);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -39,6 +57,22 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordTouched(true);
+
+    // Validate password before proceeding
+    try {
+      passwordSchema.parse(password);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Weak Password",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -288,15 +322,41 @@ export default function Auth() {
                       type="password"
                       placeholder="••••••••"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setPasswordTouched(true);
+                      }}
                       required
                       className="bg-input border-border"
                     />
+                    {passwordTouched && (
+                      <div className="space-y-1 text-xs mt-2 p-2 bg-muted/20 rounded border border-border/50">
+                        <p className="font-medium text-foreground mb-1">Password Requirements:</p>
+                        <div className="space-y-0.5">
+                          <div className={`flex items-center gap-1 ${passwordRequirements.minLength ? 'text-green-500' : 'text-muted-foreground'}`}>
+                            {passwordRequirements.minLength ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            <span>At least 8 characters</span>
+                          </div>
+                          <div className={`flex items-center gap-1 ${passwordRequirements.hasUppercase ? 'text-green-500' : 'text-muted-foreground'}`}>
+                            {passwordRequirements.hasUppercase ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            <span>One uppercase letter</span>
+                          </div>
+                          <div className={`flex items-center gap-1 ${passwordRequirements.hasLowercase ? 'text-green-500' : 'text-muted-foreground'}`}>
+                            {passwordRequirements.hasLowercase ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            <span>One lowercase letter</span>
+                          </div>
+                          <div className={`flex items-center gap-1 ${passwordRequirements.hasNumber ? 'text-green-500' : 'text-muted-foreground'}`}>
+                            {passwordRequirements.hasNumber ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            <span>One number</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <Button 
                     type="submit" 
                     className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90" 
-                    disabled={loading}
+                    disabled={loading || (passwordTouched && !isPasswordValid)}
                   >
                     {loading ? "Creating account..." : "Get My Temp Name & Join Chat!"}
                   </Button>
