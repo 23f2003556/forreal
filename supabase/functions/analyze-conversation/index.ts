@@ -49,7 +49,7 @@ serve(async (req) => {
       throw new Error('Missing required parameters');
     }
 
-    console.log('Analyzing conversation for chat session:', chatSessionId, 'user:', userId);
+    console.log('Starting conversation analysis');
 
     // Verify the authenticated user is a participant in this chat session
     const { data: session, error: sessionError } = await supabase
@@ -80,7 +80,7 @@ serve(async (req) => {
       .map((msg: any) => `${msg.sender_id === userId ? 'Me' : 'Them'}: ${msg.content}`)
       .join('\n');
 
-    console.log('Conversation text length:', conversationText.length);
+    console.log('Analysis started, message count:', messages.length);
 
     // Create OpenAI analysis prompt
     const prompt = `Analyze this chat conversation and provide insights in JSON format. Focus on the perspective of the user who says "Me:".
@@ -139,14 +139,14 @@ Return only the JSON object, no other text.`;
     console.log('OpenAI response received');
 
     const aiAnalysis = data.choices[0].message.content.trim();
-    console.log('AI analysis:', aiAnalysis);
+    console.log('Analysis completed successfully');
 
     // Parse the JSON response
     let insights;
     try {
       insights = JSON.parse(aiAnalysis);
     } catch (parseError) {
-      console.error('Failed to parse AI response as JSON:', aiAnalysis);
+      console.error('Failed to parse AI response as JSON');
       // Fallback insights
       insights = {
         interest_score: 50,
@@ -157,7 +157,7 @@ Return only the JSON object, no other text.`;
       };
     }
 
-    console.log('Parsed insights:', insights);
+    // Insights parsed successfully
 
     // Update database with insights (supabase client already created above for auth)
 
