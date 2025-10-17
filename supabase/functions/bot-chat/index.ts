@@ -194,8 +194,8 @@ serve(async (req) => {
       .single();
 
     if (sessionError || !session) {
-      console.error('Session error:', sessionError);
-      return new Response(JSON.stringify({ error: 'Chat session not found' }), {
+      console.error('Chat session not found:', chatSessionId, sessionError);
+      return new Response(JSON.stringify({ error: 'Not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -203,8 +203,8 @@ serve(async (req) => {
 
     // Verify user is a participant
     if (session.user1_id !== user.id && session.user2_id !== user.id) {
-      console.error('User not participant:', user.id, session);
-      return new Response(JSON.stringify({ error: 'User is not a participant in this chat' }), {
+      console.error('Authorization failed: User', user.id, 'not in session', chatSessionId);
+      return new Response(JSON.stringify({ error: 'Access denied' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -212,7 +212,8 @@ serve(async (req) => {
 
     // Verify it's a bot chat
     if (session.user1_id !== BOT_USER_ID && session.user2_id !== BOT_USER_ID) {
-      return new Response(JSON.stringify({ error: 'This is not a bot chat session' }), {
+      console.error('Invalid chat type for bot interaction:', chatSessionId);
+      return new Response(JSON.stringify({ error: 'Invalid request' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

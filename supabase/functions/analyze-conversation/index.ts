@@ -96,8 +96,8 @@ serve(async (req) => {
       .single();
 
     if (sessionError || !session) {
-      console.error('Chat session not found:', sessionError);
-      return new Response(JSON.stringify({ error: 'Chat session not found' }), {
+      console.error('Chat session not found:', chatSessionId, sessionError);
+      return new Response(JSON.stringify({ error: 'Not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -105,8 +105,8 @@ serve(async (req) => {
 
     // Verify user is one of the participants
     if (session.user1_id !== userId && session.user2_id !== userId) {
-      console.error('User not authorized for this chat session');
-      return new Response(JSON.stringify({ error: 'Forbidden - You are not a participant in this chat' }), {
+      console.error('Authorization failed: User', userId, 'not in session', chatSessionId);
+      return new Response(JSON.stringify({ error: 'Access denied' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });

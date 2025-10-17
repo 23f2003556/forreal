@@ -10,7 +10,7 @@ const messageSchema = z.object({
   content: z.string()
     .trim()
     .min(1, "Message cannot be empty")
-    .max(5000, "Message must be less than 5000 characters")
+    .max(2000, "Message must be less than 2000 characters")
 });
 
 interface ChatInputProps {
@@ -48,7 +48,7 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
     }
   };
 
-  const isOverLimit = charCount > 5000;
+  const isOverLimit = charCount > 2000;
 
   return (
     <form onSubmit={handleSubmit} className="border-t-2 border-border glass-strong">
@@ -59,15 +59,15 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
             onChange={handleInputChange}
             placeholder="Type your message... 💬"
             disabled={disabled}
-            maxLength={5100}
+            maxLength={2100}
             className={`bg-background border-2 ${
               isOverLimit ? 'border-destructive' : 'border-border'
             } focus:ring-primary rounded-2xl text-foreground font-medium pr-16`}
           />
           <div className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium ${
-            isOverLimit ? 'text-destructive' : charCount > 4500 ? 'text-orange-500' : 'text-muted-foreground'
+            isOverLimit ? 'text-destructive' : charCount > 1800 ? 'text-orange-500' : 'text-muted-foreground'
           }`}>
-            {charCount}/5000
+            {charCount}/2000
           </div>
         </div>
         <Button 
@@ -80,7 +80,7 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
       </div>
       {isOverLimit && (
         <div className="px-4 pb-3 text-sm text-destructive">
-          Message is too long. Please keep it under 5000 characters.
+          Message is too long. Please keep it under 2000 characters.
         </div>
       )}
     </form>
